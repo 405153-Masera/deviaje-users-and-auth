@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * La clase {@code DniTypeEntity} representa un tipo de DNI en la aplicación.
+ * Es un mapeo a la tabla "dni_types" en la base de datos.
  */
 @Entity
 @Table(name = "dni_types")
@@ -29,13 +30,13 @@ public class DniTypeEntity {
   private String description;
 
   @Column(name = "created_datetime")
-  private LocalDateTime createdDateTime;
+  private LocalDateTime createdDatetime;
 
   @Column(name = "created_user")
   private Integer createdUser;
 
   @Column(name = "last_updated_datetime")
-  private LocalDateTime lastUpdatedDateTime;
+  private LocalDateTime lastUpdatedDatetime;
 
   @Column(name = "last_updated_user")
   private Integer lastUpdatedUser;

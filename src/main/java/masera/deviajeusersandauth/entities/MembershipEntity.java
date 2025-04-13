@@ -1,41 +1,39 @@
 package masera.deviajeusersandauth.entities;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * La clase {@code UserRoleEntity} representa un rol de un usuario en la aplicación.
- * Es un mapeo a la tabla "user_roles" en la base de datos.
+ * La clase {@code MembershipEntity} representa una membresía.
+ * Referencia a la tabla llamada "memberships".
  */
 @Entity
-@Table(name = "user_roles")
+@Table(name = "memberships")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRoleEntity {
+public class MembershipEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @ManyToOne
-  @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-  private UserEntity user;
+  @Column(nullable = false, unique = true)
+  private String description;
 
-  @ManyToOne
-  @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
-  private RoleEntity role;
+  private BigDecimal cost;
+
+  @Column(name = "discount_percentage")
+  private BigDecimal discountPercentage;
 
   @Column(name = "created_datetime")
   private LocalDateTime createdDatetime;
