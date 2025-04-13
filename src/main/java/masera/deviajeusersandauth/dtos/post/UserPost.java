@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class UserPost {
 
   @NotBlank(message = "Username is required")
-  @Size(min = 4, max = 50, message = "Username must be between 4 and 50 characters")
+  @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
   private String username;
 
   @NotBlank(message = "Email is required")
@@ -25,7 +26,7 @@ public class UserPost {
   private String email;
 
   @NotBlank(message = "Password is required")
-  @Size(min = 8, message = "Password must be at least 8 characters")
+  @Size(min = 6, max = 40, message = "Password must be between 6 and 40 characters")
   private String password;
 
   private String firstName;
@@ -34,5 +35,5 @@ public class UserPost {
   private LocalDate birthDate;
   private String dni;
   private Integer dniTypeId;
-  private String avatarUrl;
+  private Set<String> roles;
 }
