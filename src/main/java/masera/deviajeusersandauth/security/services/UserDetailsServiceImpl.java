@@ -2,6 +2,7 @@ package masera.deviajeusersandauth.security.services;
 
 import masera.deviajeusersandauth.entities.UserEntity;
 import masera.deviajeusersandauth.repositories.UserRepository;
+import org.hibernate.Hibernate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,11 +29,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
-    UserEntity userEntity = userRepository.findByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: "
-                    + username));
-
-    return UserDetailsImpl.build(userEntity);
+    UserEntity user = userRepository.findByUsernameWithRoles(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    return UserDetailsImpl.build(user);
   }
 }

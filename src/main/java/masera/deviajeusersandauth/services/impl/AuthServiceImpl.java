@@ -38,31 +38,35 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public JwtResponse authenticateUser(LoginRequest loginRequest) {
-    Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+    try {
+      Authentication authentication = authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-    SecurityContextHolder.getContext().setAuthentication(authentication);
+      SecurityContextHolder.getContext().setAuthentication(authentication);
 
-    // Usar el nuevo método del JwtUtils actualizado
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-    String jwt = jwtUtils.generateToken(userDetails);
+      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+      String jwt = jwtUtils.generateToken(userDetails);
 
-    List<String> roles = userDetails.getAuthorities().stream()
-            .map(item -> item.getAuthority())
-            .collect(Collectors.toList());
+      List<String> roles = userDetails.getAuthorities().stream()
+              .map(item -> item.getAuthority())
+              .collect(Collectors.toList());
 
-    RefreshTokenEntity refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+      RefreshTokenEntity refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
-    return JwtResponse.builder()
-            .token(jwt)
-            .refreshToken(refreshToken.getToken())
-            .id(userDetails.getId())
-            .username(userDetails.getUsername())
-            .email(userDetails.getEmail())
-            .roles(roles)
-            .build();
+      return JwtResponse.builder()
+              .token(jwt)
+              .refreshToken(refreshToken.getToken())
+              .id(userDetails.getId())
+              .username(userDetails.getUsername())
+              .email(userDetails.getEmail())
+              .roles(roles)
+              .build();
+    } catch (Exception e) {
+      // Registro detallado para depuración
+      e.printStackTrace();
+      throw new RuntimeException("Authentication failed: " + e.getMessage(), e);
+    }
   }
-
 
   @Override
   public JwtResponse refreshToken(RefreshTokenRequest request) {

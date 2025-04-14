@@ -12,6 +12,7 @@ import masera.deviajeusersandauth.services.interfaces.AuthService;
 import masera.deviajeusersandauth.services.interfaces.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -26,6 +27,10 @@ public class AuthController {
 
   @PostMapping("/login")
   public ResponseEntity<JwtResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    /*BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+    String password = "Admin123!";
+    String hashedPassword = encoder.encode(password);
+    System.out.println("Contraseña hasheada: " + hashedPassword);*/
     JwtResponse response = authService.authenticateUser(loginRequest);
     return ResponseEntity.ok(response);
   }

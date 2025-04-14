@@ -5,6 +5,7 @@ import java.util.Optional;
 import masera.deviajeusersandauth.entities.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -63,4 +64,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
   @Query("SELECT DISTINCT u FROM UserEntity u JOIN FETCH u.userRoles ur "
           + "JOIN FETCH ur.role r WHERE r.description = :roleName")
   List<UserEntity> findAllByRoleName(String roleName);
+
+  @Query("SELECT u FROM UserEntity u JOIN FETCH u.userRoles ur JOIN FETCH ur.role WHERE u.username = :username")
+  Optional<UserEntity> findByUsernameWithRoles(@Param("username") String username);
 }

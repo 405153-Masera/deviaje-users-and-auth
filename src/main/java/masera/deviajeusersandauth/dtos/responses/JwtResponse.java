@@ -17,6 +17,8 @@ public class JwtResponse {
 
   private String token;
   private String refreshToken;
+
+  @Builder.Default
   private String type = "Bearer";
   private Integer id;
   private String username;

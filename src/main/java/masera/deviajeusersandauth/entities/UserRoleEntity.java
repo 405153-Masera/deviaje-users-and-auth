@@ -13,10 +13,8 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 
 /**
  * La clase {@code UserRoleEntity} representa un rol de un usuario en la aplicación.
@@ -24,7 +22,8 @@ import lombok.NoArgsConstructor;
  */
 @Entity
 @Table(name = "user_roles")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
