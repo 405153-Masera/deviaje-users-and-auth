@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
-  @Value("${app.jwt.expiration.minutes}")
+  @Value("${deviaje.app.jwtRefreshExpirationMs}")
   private Long refreshTokenDurationMs;
 
   private final RefreshTokenRepository refreshTokenRepository;

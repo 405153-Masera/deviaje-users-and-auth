@@ -30,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
 
   private final UserRepository userRepository;
 
-  private PasswordEncoder passwordEncoder;
+  private final PasswordEncoder passwordEncoder;
 
   private final JwtUtils jwtUtils;
 
