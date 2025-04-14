@@ -1,5 +1,6 @@
 package masera.deviajeusersandauth.services.impl;
 
+import jakarta.xml.bind.SchemaOutputResolver;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import masera.deviajeusersandauth.dtos.get.UserDto;
@@ -43,7 +44,7 @@ public class UserServiceImpl implements UserService {
 
   private final DniTypeRepository dniTypeRepository;
 
-  private PasswordEncoder passwordEncoder;
+  private final PasswordEncoder passwordEncoder;
 
   private final ModelMapper modelMapper;
 
@@ -116,23 +117,20 @@ public class UserServiceImpl implements UserService {
       userEntity.setDniType(dniType);
     }
 
-    Set<RoleEntity> roles = new HashSet<>();
-    RoleEntity clienteRole = roleRepository.findByDescription("CLIENTE")
+    userEntity.setId(null);
+    userEntity = userRepository.save(userEntity);
+
+    RoleEntity roleEntity = roleRepository.findByDescription("CLIENTE")
             .orElseThrow(() -> new RuntimeException("Error: Role CLIENTE is not found."));
-    roles.add(clienteRole);
 
 
     // Assign roles to user
-    for (RoleEntity role : roles) {
-      UserRoleEntity userRole = UserRoleEntity.builder()
-              .user(userEntity)
-              .role(role)
-              .build();
-      userRoleRepository.save(userRole);
-      userEntity.getUserRoles().add(userRole);
-    }
+    UserRoleEntity userRole = UserRoleEntity.builder()
+            .user(userEntity)
+            .role(roleEntity)
+            .build();
+    userRoleRepository.save(userRole);
 
-    userRepository.save(userEntity);
     return new MessageResponse("User registered successfully!");
   }
 

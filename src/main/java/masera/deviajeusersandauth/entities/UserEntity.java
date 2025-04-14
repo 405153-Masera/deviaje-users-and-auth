@@ -84,10 +84,10 @@ public class UserEntity {
   @Column(name = "last_updated_user")
   private Integer lastUpdatedUser;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "user")
   private Set<UserRoleEntity> userRoles = new HashSet<>();
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+  @OneToOne(mappedBy = "user")
   private UserMembershipEntity userMembership;
 
   /**

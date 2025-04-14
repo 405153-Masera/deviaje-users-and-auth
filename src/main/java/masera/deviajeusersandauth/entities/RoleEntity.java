@@ -1,14 +1,11 @@
 package masera.deviajeusersandauth.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,6 +42,9 @@ public class RoleEntity {
 
   @Column(name = "last_updated_user")
   private Integer lastUpdatedUser;
+
+  @OneToMany(mappedBy = "role")
+  private Set<UserRoleEntity> userRoles = new HashSet<>();
 
   /**
    * Metodo que se ejecuta antes de persistir la entidad.
