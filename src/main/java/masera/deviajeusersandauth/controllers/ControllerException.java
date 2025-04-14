@@ -6,10 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
 import masera.deviajeusersandauth.dtos.common.ErrorApi;
-import masera.deviajeusersandauth.exceptions.EmailAlreadyExistsException;
-import masera.deviajeusersandauth.exceptions.ResourceNotFoundException;
-import masera.deviajeusersandauth.exceptions.TokenRefreshException;
-import masera.deviajeusersandauth.exceptions.UsernameAlreadyExistsException;
+import masera.deviajeusersandauth.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -61,6 +58,24 @@ public class ControllerException {
   public ResponseEntity<ErrorApi> handleTokenRefreshException(TokenRefreshException e) {
     ErrorApi error = buildError(e.getMessage(), HttpStatus.FORBIDDEN);
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+  }
+
+  /**
+   * Manejador para PasswordMismatchException (400).
+   */
+  @ExceptionHandler(PasswordMismatchException.class)
+  public ResponseEntity<ErrorApi> handlePasswordMismatchException(PasswordMismatchException e) {
+    ErrorApi error = buildError(e.getMessage(), HttpStatus.BAD_REQUEST);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+  }
+
+  /**
+   * Manejador para InvalidResetTokenException (400).
+   */
+  @ExceptionHandler(InvalidResetTokenException.class)
+  public ResponseEntity<ErrorApi> handleInvalidResetTokenException(InvalidResetTokenException e) {
+    ErrorApi error = buildError(e.getMessage(), HttpStatus.BAD_REQUEST);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
   }
 
   /**

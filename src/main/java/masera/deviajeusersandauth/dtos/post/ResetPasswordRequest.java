@@ -6,19 +6,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO que representa una solicitud de cambio de contraseña.
- */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class PasswordChangeRequest {
+@NoArgsConstructor
+public class ResetPasswordRequest {
 
-  @NotBlank(message = "Current password is required")
-  private String currentPassword;
+  @NotBlank(message = "Token cannot be empty")
+  private String token;
 
-  @NotBlank(message = "New password is required")
-  @Size(min = 8, message = "New password must be at least 8 characters long")
+  @NotBlank(message = "New password cannot be empty")
+  @Size(min = 6, max = 40, message = "New password must be between 6 and 40 characters")
   private String newPassword;
 
   @NotBlank(message = "Confirm password cannot be empty")
