@@ -1,21 +1,18 @@
-package masera.deviajeusersandauth.dtos.post;
+package masera.deviajeusersandauth.dtos.post.users;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.Set;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
- * DTO que representa los datos para el registro de un usuario.
+ * Clase base que representa la solicitud para crear un usuario.
+ * No se debe instanciar directamente.
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserPost {
+public class UserBase {
 
   @NotBlank(message = "Username is required")
   @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
@@ -35,5 +32,4 @@ public class UserPost {
   private LocalDate birthDate;
   private String dni;
   private Integer dniTypeId;
-  private Set<String> roles;
 }

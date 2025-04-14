@@ -20,18 +20,18 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-  private final JwtUtil jwtUtil;
+  private final JwtUtils jwtUtils;
 
   private final UserDetailsService userDetailsService;
 
   /**
    * Constructor de la clase JwtAuthenticationFilter.
    *
-   * @param jwtUtil clase JwtUtil para generar y validar tokens JWT.
+   * @param jwtUtils clase JwtUtil para generar y validar tokens JWT.
    * @param userDetailsService servicio de detalles de usuario.
    */
-  public JwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
-    this.jwtUtil = jwtUtil;
+  public JwtAuthenticationFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService) {
+    this.jwtUtils = jwtUtils;
     this.userDetailsService = userDetailsService;
   }
 
@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       // Extraer el token JWT de la cabecera Authorization
       jwt = authHeader.substring(7);
       try {
-        username = jwtUtil.extractUsername(jwt);
+        username = jwtUtils.extractUsername(jwt);
       } catch (Exception e) {
         logger.error("Error al extraer el nombre de usuario del token JWT", e);
       }
@@ -71,7 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
       // Si el token es válido, configura la autenticación de Spring Security.
-      if (jwtUtil.validateToken(jwt, userDetails)) {
+      if (jwtUtils.validateToken(jwt, userDetails)) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
             userDetails, null, userDetails.getAuthorities());
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

@@ -21,16 +21,16 @@ import org.springframework.stereotype.Component;
  * Se utiliza para generar y validar tokens JWT.
  */
 @Component
-public class JwtUtil {
+public class JwtUtils {
 
-  @Value("${app.jwt.secret}")
+  @Value("${deviaje.app.jwtSecret}")
   private String secret;
 
-  @Value("${app.jwt.expiration.minutes}")
-  private long expirationMinutes;
+  @Value("${deviaje.app.jwtExpirationMs}")
+  private long expirationMs;
 
-  @Value("${app.jwt.refresh.expiration.days}")
-  private long refreshExpirationDays;
+  @Value("${deviaje.app.jwtRefreshExpirationMs}")
+  private long refreshExpirationMs;
 
 
   /**
@@ -111,7 +111,7 @@ public class JwtUtil {
   public String generateToken(UserDetails userDetails) {
     Map<String, Object> claims = new HashMap<>();
     return createToken(claims, userDetails.getUsername(),
-            expirationMinutes * 60 * 1000);
+            expirationMs);
   }
 
   /**
@@ -123,7 +123,7 @@ public class JwtUtil {
    */
   public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
     return createToken(extraClaims, userDetails.getUsername(),
-            expirationMinutes * 60 * 1000);
+            expirationMs);
   }
 
   /**
@@ -135,7 +135,7 @@ public class JwtUtil {
   public String generateRefreshToken(UserDetails userDetails) {
     Map<String, Object> claims = new HashMap<>();
     return createToken(claims, userDetails.getUsername(),
-            refreshExpirationDays * 24 * 60 * 60 * 1000);
+            refreshExpirationMs);
   }
 
   /**

@@ -11,8 +11,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -42,7 +42,7 @@ public class RefreshTokenEntity {
   private String token;
 
   @Column(name = "expiry_date", nullable = false)
-  private ZonedDateTime expiryDate;
+  private Instant expiryDate;
 
   @Column(name = "created_datetime")
   private LocalDateTime createdDatetime;
