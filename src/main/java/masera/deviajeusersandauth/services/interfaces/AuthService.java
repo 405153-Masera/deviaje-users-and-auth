@@ -6,10 +6,12 @@ import masera.deviajeusersandauth.dtos.post.users.SignupRequest;
 import masera.deviajeusersandauth.dtos.responses.JwtResponse;
 import masera.deviajeusersandauth.dtos.responses.MessageResponse;
 import masera.deviajeusersandauth.entities.UserEntity;
+import org.springframework.stereotype.Service;
 
 /**
  * Interfaz que define los métodos para la autenticación y gestión de usuarios.
  */
+@Service
 public interface AuthService {
 
   /**
