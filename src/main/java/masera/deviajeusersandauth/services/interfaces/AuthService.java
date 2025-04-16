@@ -2,7 +2,6 @@ package masera.deviajeusersandauth.services.interfaces;
 
 import masera.deviajeusersandauth.dtos.post.LoginRequest;
 import masera.deviajeusersandauth.dtos.post.RefreshTokenRequest;
-import masera.deviajeusersandauth.dtos.post.users.SignupRequest;
 import masera.deviajeusersandauth.dtos.responses.JwtResponse;
 import masera.deviajeusersandauth.dtos.responses.MessageResponse;
 import masera.deviajeusersandauth.entities.UserEntity;

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import masera.deviajeusersandauth.entities.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * Clase que representa los detalles de un usuario.
  */
 @Getter
+@RequiredArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
   @Serial
@@ -35,42 +37,10 @@ public class UserDetailsImpl implements UserDetails {
   private final Boolean active;
   private final String avatarUrl;
 
-  private final Collection<? extends GrantedAuthority> authorities;
-
   /**
-   * Constructor de la clase.
-   *
-   * @param id  el ID del usuario.
-   * @param username es el nombre de usuario.
-   * @param email es el email del usuario.
-   * @param password es la contraseña del usuario.
-   * @param firstName es el nombre del usuario.
-   * @param lastName es el apellido del usuario.
-   * @param phone es el número de teléfono del usuario.
-   * @param birthDate es la fecha de nacimiento del usuario.
-   * @param dni es el DNI del usuario.
-   * @param active indica si el usuario está activo.
-   * @param avatarUrl es la URL del avatar del usuario.
-   * @param authorities son los roles del usuario.
+   * Lista de roles del usuario.
    */
-  public UserDetailsImpl(Integer id, String username, String email,
-                         String password, String firstName,
-                         String lastName, String phone,
-                         LocalDate birthDate, String dni, Boolean active,
-                         String avatarUrl, Collection<? extends GrantedAuthority> authorities) {
-    this.id = id;
-    this.username = username;
-    this.email = email;
-    this.password = password;
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.phone = phone;
-    this.birthDate = birthDate;
-    this.dni = dni;
-    this.active = active;
-    this.avatarUrl = avatarUrl;
-    this.authorities = authorities;
-  }
+  private final Collection<? extends GrantedAuthority> authorities;
 
   /**
    * Metodo estático para construir un objeto UserDetailsImpl a partir de un UserEntity.

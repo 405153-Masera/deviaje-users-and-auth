@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO que representa la solicitud para restablecer la contraseña de un usuario.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

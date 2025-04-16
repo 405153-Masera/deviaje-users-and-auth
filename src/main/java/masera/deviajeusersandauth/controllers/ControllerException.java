@@ -6,7 +6,12 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
 import masera.deviajeusersandauth.dtos.common.ErrorApi;
-import masera.deviajeusersandauth.exceptions.*;
+import masera.deviajeusersandauth.exceptions.EmailAlreadyExistsException;
+import masera.deviajeusersandauth.exceptions.InvalidResetTokenException;
+import masera.deviajeusersandauth.exceptions.PasswordMismatchException;
+import masera.deviajeusersandauth.exceptions.ResourceNotFoundException;
+import masera.deviajeusersandauth.exceptions.TokenRefreshException;
+import masera.deviajeusersandauth.exceptions.UsernameAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -37,7 +42,8 @@ public class ControllerException {
    * Manejador para UsernameAlreadyExistsException (409).
    */
   @ExceptionHandler(UsernameAlreadyExistsException.class)
-  public ResponseEntity<ErrorApi> handleUsernameAlreadyExistsException(UsernameAlreadyExistsException e) {
+  public ResponseEntity<ErrorApi> handleUsernameAlreadyExistsException(
+          UsernameAlreadyExistsException e) {
     ErrorApi error = buildError(e.getMessage(), HttpStatus.CONFLICT);
     return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
   }
@@ -83,7 +89,7 @@ public class ControllerException {
    */
   @ExceptionHandler(BadCredentialsException.class)
   public ResponseEntity<ErrorApi> handleBadCredentialsException(BadCredentialsException e) {
-    ErrorApi error = buildError("Invalid username or password", HttpStatus.UNAUTHORIZED);
+    ErrorApi error = buildError(e.getMessage(), HttpStatus.UNAUTHORIZED);
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
   }
 
@@ -92,7 +98,7 @@ public class ControllerException {
    */
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ErrorApi> handleAccessDeniedException(AccessDeniedException e) {
-    ErrorApi error = buildError("Access denied", HttpStatus.FORBIDDEN);
+    ErrorApi error = buildError(e.getMessage(), HttpStatus.FORBIDDEN);
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
   }
 
@@ -100,7 +106,8 @@ public class ControllerException {
    * Manejador para errores de validación (400).
    */
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException e) {
+  public ResponseEntity<Map<String, Object>> handleValidationExceptions(
+          MethodArgumentNotValidException e) {
     Map<String, String> fieldErrors = new HashMap<>();
     e.getBindingResult().getAllErrors().forEach((error) -> {
       String fieldName = ((FieldError) error).getField();

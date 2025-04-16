@@ -14,15 +14,26 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 /**
- * Maneja las excepciones de autenticación que ocurren
- * cuando un usuario intenta acceder a un recurso protegido sin
- * estar autenticado correctamente.
+ * Maneja las excepciones de autenticación que ocurren cuando un usuario intenta
+ * acceder a un recurso protegido sin estar autenticado correctamente.
+ * Implementa la interfaz AuthenticationEntryPoint que invoca Spring Security
+ * para cuando ocurre una excepción de autenticación.
  */
 @Component
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
   private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
 
+  /**
+   * Este metodo se invoca cuando un usuario no autenticado intenta acceder a un
+   * recurso protegido. En este caso, se devuelve una respuesta JSON con el
+   * estado de error y el mensaje de error.
+   *
+   * @param request la solicitud HTTP
+   * @param response la respuesta HTTP
+   * @param authException la excepción de autenticación
+   * @throws IOException si ocurre un error al escribir la respuesta
+   */
   @Override
   public void commence(HttpServletRequest request,
                        HttpServletResponse response,

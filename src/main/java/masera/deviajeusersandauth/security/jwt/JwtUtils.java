@@ -1,7 +1,6 @@
 package masera.deviajeusersandauth.security.jwt;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -18,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Clase para el manejo de JWT(JSON Web Tokens).
- * Se utiliza para generar y validar tokens JWT.
+ * Se utiliza para generar, validar y extraer información de los tokens JWT.
  */
 @Component
 public class JwtUtils {
@@ -29,16 +28,12 @@ public class JwtUtils {
   @Value("${deviaje.app.jwtExpirationMs}")
   private long expirationMs;
 
-  @Value("${deviaje.app.jwtRefreshExpirationMs}")
-  private long refreshExpirationMs;
-
-
   /**
    * Metodo que genera la clave de firma (signing key) a partir de la clave secreta.
    *
    * @return la clave de firma (signing key).
    */
-  private Key getSignigKey() {
+  private Key getSigningKey() {
     byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
     return Keys.hmacShaKeyFor(keyBytes);
   }
@@ -84,7 +79,7 @@ public class JwtUtils {
    */
   private Claims extractAllClaims(String token) {
     return Jwts.parserBuilder()
-        .setSigningKey(getSignigKey())
+        .setSigningKey(getSigningKey())
         .build()
         .parseClaimsJws(token)
         .getBody();
@@ -115,30 +110,6 @@ public class JwtUtils {
   }
 
   /**
-   * Metodo que genera un token de acceso para un usuario con reclamaciones(claims) adicionales.
-   *
-   * @param extraClaims reclamaciones adicionales.
-   * @param userDetails detalles del usuario.
-   * @return el token generado.
-   */
-  public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-    return createToken(extraClaims, userDetails.getUsername(),
-            expirationMs);
-  }
-
-  /**
-   * Metodo que genera un token de refresco para un usuario.
-   *
-   * @param userDetails detalles del usuario.
-   * @return el token de refresco generado.
-   */
-  public String generateRefreshToken(UserDetails userDetails) {
-    Map<String, Object> claims = new HashMap<>();
-    return createToken(claims, userDetails.getUsername(),
-            refreshExpirationMs);
-  }
-
-  /**
    * Metodo que crea el token JWT.
    *
    * @param claims claims del token.
@@ -152,7 +123,7 @@ public class JwtUtils {
             .setSubject(subject)
             .setIssuedAt(new Date(System.currentTimeMillis()))
             .setExpiration(new Date(System.currentTimeMillis() + expiration))
-            .signWith(getSignigKey(), SignatureAlgorithm.HS256)
+            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
             .compact();
   }
 
@@ -166,21 +137,5 @@ public class JwtUtils {
   public Boolean validateToken(String token, UserDetails userDetails) {
     final String username = extractUsername(token);
     return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-  }
-
-  /**
-   * Metodo que valida el token JWT sin necesidad de los detalles del usuario
-   * solo verifica firma y expiración.
-   *
-   * @param token el token JWT.
-   * @return true si el token es válido, false en caso contrario.
-   */
-  public boolean validateToken(String token) {
-    try {
-      Jwts.parserBuilder().setSigningKey(getSignigKey()).build().parseClaimsJws(token);
-      return true;
-    } catch (JwtException | IllegalArgumentException e) {
-      return false;
-    }
   }
 }

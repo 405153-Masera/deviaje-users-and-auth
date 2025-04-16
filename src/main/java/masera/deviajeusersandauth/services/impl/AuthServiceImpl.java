@@ -15,7 +15,9 @@ import masera.deviajeusersandauth.security.jwt.JwtUtils;
 import masera.deviajeusersandauth.security.services.UserDetailsImpl;
 import masera.deviajeusersandauth.services.interfaces.AuthService;
 import masera.deviajeusersandauth.services.interfaces.RefreshTokenService;
+import org.apache.coyote.BadRequestException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -61,6 +63,8 @@ public class AuthServiceImpl implements AuthService {
               .email(userDetails.getEmail())
               .roles(roles)
               .build();
+    } catch (BadCredentialsException e) {
+      throw e;
     } catch (Exception e) {
       // Registro detallado para depuración
       e.printStackTrace();

@@ -1,6 +1,5 @@
 package masera.deviajeusersandauth.services.impl;
 
-import jakarta.xml.bind.SchemaOutputResolver;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import masera.deviajeusersandauth.dtos.get.UserDto;

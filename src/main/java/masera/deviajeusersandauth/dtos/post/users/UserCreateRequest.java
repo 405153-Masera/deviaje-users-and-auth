@@ -1,11 +1,10 @@
 package masera.deviajeusersandauth.dtos.post.users;
 
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.util.Set;
 
 /**
  * DTO que representa la solicitud para crear un usuario.

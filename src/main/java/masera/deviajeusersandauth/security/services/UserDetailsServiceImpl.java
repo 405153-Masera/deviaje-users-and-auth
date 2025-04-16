@@ -1,8 +1,8 @@
 package masera.deviajeusersandauth.security.services;
 
+import lombok.RequiredArgsConstructor;
 import masera.deviajeusersandauth.entities.UserEntity;
 import masera.deviajeusersandauth.repositories.UserRepository;
-import org.hibernate.Hibernate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,23 +14,16 @@ import org.springframework.stereotype.Service;
  * esta información a Spring Security para la autenticación y autorización.
  */
 @Service
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
   private final UserRepository userRepository;
 
-  /**
-   * Constructor de la clase UserDetailsServiceImpl.
-   *
-   * @param userRepository Repositorio de usuarios.
-   */
-  public UserDetailsServiceImpl(UserRepository userRepository) {
-    this.userRepository = userRepository;
-  }
-
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     UserEntity user = userRepository.findByUsernameWithRoles(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+            .orElseThrow(() ->
+                    new UsernameNotFoundException("User not found with username: " + username));
     return UserDetailsImpl.build(user);
   }
 }
