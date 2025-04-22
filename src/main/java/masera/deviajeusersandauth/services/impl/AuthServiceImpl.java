@@ -24,6 +24,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Clase de implementación del servicio de autenticación.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -42,7 +45,8 @@ public class AuthServiceImpl implements AuthService {
   public JwtResponse authenticateUser(LoginRequest loginRequest) {
     try {
       Authentication authentication = authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                      loginRequest.getPassword()));
 
       SecurityContextHolder.getContext().setAuthentication(authentication);
 
