@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-
 /**
  * Clase para el manejo de JWT(JSON Web Tokens).
  * Se utiliza para generar, validar y extraer información de los tokens JWT.

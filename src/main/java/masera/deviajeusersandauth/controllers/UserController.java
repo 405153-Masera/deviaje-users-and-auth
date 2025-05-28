@@ -37,20 +37,20 @@ public class UserController {
    * @return Lista de usuarios.
    */
   @GetMapping
-  @PreAuthorize("hasAnyAuthority('SUPERADMIN', 'GERENTE')")
+  @PreAuthorize("hasAnyAuthority('ADMINISTRADOR')")
   public ResponseEntity<List<UserDto>> getAllUsers() {
     List<UserDto> users = userService.getAllUsers();
     return ResponseEntity.ok(users);
   }
 
   /**
-   * Endpoint para obtener un usuario por su ID.
+   * Endpoint para obtener un usuario por su ROL.
    *
    * @param role Rol del usuario a buscar.
    * @return Lista de usuarios con el rol especificado.
    */
   @GetMapping("/role/{role}")
-  @PreAuthorize("hasAnyAuthority('SUPERADMIN', 'GERENTE')")
+  @PreAuthorize("hasAnyAuthority('ADMINISTRADOR')")
   public ResponseEntity<List<UserDto>> getUsersByRole(@PathVariable String role) {
     List<UserDto> users = userService.getUsersByRole(role);
     return ResponseEntity.ok(users);
@@ -63,7 +63,7 @@ public class UserController {
    * @return Usuario encontrado.
    */
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyAuthority('SUPERADMIN', 'GERENTE', 'AGENTE')"
+  @PreAuthorize("hasAnyAuthority('ADMINISTRADOR')"
           + " or #id == authentication.principal.id")
   public ResponseEntity<UserDto> getUserById(@PathVariable Integer id) {
     UserDto user = userService.getUserById(id);
@@ -77,7 +77,7 @@ public class UserController {
    * @return Usuario creado.
    */
   @PostMapping
-  @PreAuthorize("hasAnyAuthority('SUPERADMIN', 'GERENTE')")
+  @PreAuthorize("hasAnyAuthority('ADMINISTRADOR')")
   public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserCreateRequest request) {
     UserDto createdUser = userService.createUser(request);
     return ResponseEntity.ok(createdUser);
@@ -91,7 +91,7 @@ public class UserController {
    * @return Usuario actualizado.
    */
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyAuthority('SUPERADMIN', 'GERENTE') "
+  @PreAuthorize("hasAnyAuthority('ADMINISTRADOR') "
           + "or #id == authentication.principal.id")
   public ResponseEntity<UserDto> updateUser(@PathVariable Integer id,
                                             @Valid @RequestBody UserPut request) {
@@ -106,7 +106,7 @@ public class UserController {
    * @return Mensaje de respuesta.
    */
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAuthority('SUPERADMIN')")
+  @PreAuthorize("hasAuthority('ADMINISTRADOR')")
   public ResponseEntity<MessageResponse> deleteUser(@PathVariable Integer id) {
     userService.deactivateUser(id);
     return ResponseEntity.ok(new MessageResponse("User deactivated successfully"));
@@ -119,7 +119,7 @@ public class UserController {
    * @return Mensaje de respuesta.
    */
   @PostMapping("/{id}/activate")
-  @PreAuthorize("hasAuthority('SUPERADMIN')")
+  @PreAuthorize("hasAuthority('ADMINISTRADOR')")
   public ResponseEntity<MessageResponse> activateUser(@PathVariable Integer id) {
     userService.activateUser(id);
     return ResponseEntity.ok(new MessageResponse("User activated successfully"));
