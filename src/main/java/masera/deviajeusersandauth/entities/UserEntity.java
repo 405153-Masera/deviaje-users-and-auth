@@ -1,14 +1,10 @@
 package masera.deviajeusersandauth.entities;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
@@ -18,8 +14,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.DynamicUpdate;
 
 /**
@@ -49,6 +48,9 @@ public class UserEntity {
   @Column(nullable = false)
   private String password;
 
+  @Column(name = "is_temporary_password")
+  private Boolean isTemporaryPassword;
+
   @Column(name = "first_name")
   private String firstName;
 
@@ -59,12 +61,6 @@ public class UserEntity {
 
   @Column(name = "birth_date")
   private LocalDate birthDate;
-
-  private String dni;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "dni_type_id", referencedColumnName = "id")
-  private DniTypeEntity dniType;
 
   private Boolean active;
 

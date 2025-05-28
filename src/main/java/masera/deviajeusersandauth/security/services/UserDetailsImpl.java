@@ -33,7 +33,6 @@ public class UserDetailsImpl implements UserDetails {
   private final String lastName;
   private final String phone;
   private final LocalDate birthDate;
-  private final String dni;
   private final Boolean active;
   private final String avatarUrl;
 
@@ -62,7 +61,6 @@ public class UserDetailsImpl implements UserDetails {
             user.getLastName(),
             user.getPhone(),
             user.getBirthDate(),
-            user.getDni(),
             user.getActive(),
             user.getAvatarUrl(),
             authorities);

@@ -29,6 +29,6 @@ public class UserBase {
   private String lastName;
   private String phone;
   private LocalDate birthDate;
-  private String dni;
-  private Integer dniTypeId;
+
+  private PassportRequest passport;
 }

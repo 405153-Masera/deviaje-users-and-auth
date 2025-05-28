@@ -2,12 +2,16 @@ package masera.deviajeusersandauth.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,23 +19,37 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * La clase {@code DniTypeEntity} representa un tipo de DNI en la aplicación.
- * Es un mapeo a la tabla "dni_types" en la base de datos.
+ * Entidad que representa un pasaporte de usuario.
+ * Contiene información sobre el pasaporte, incluyendo el número, fecha de expiración,
+ * país de emisión, nacionalidad y metadatos de creación y actualización.
  */
 @Entity
-@Table(name = "dni_types")
+@Table(name = "passports")
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class DniTypeEntity {
+public class PassportEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @Column(nullable = false)
-  private String description;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  private UserEntity user;
+
+  @Column(name = "passport_number", nullable = false, unique = true)
+  private String passportNumber;
+
+  @Column(name = "expiry_date")
+  private LocalDate expiryDate;
+
+  @Column(name = "issuance_country", length = 2)
+  private String issuanceCountry;
+
+  @Column(name = "nationality", length = 2)
+  private String nationality;
 
   @Column(name = "created_datetime")
   private LocalDateTime createdDatetime;

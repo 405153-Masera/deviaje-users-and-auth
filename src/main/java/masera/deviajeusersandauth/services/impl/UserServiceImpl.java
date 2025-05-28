@@ -1,32 +1,41 @@
 package masera.deviajeusersandauth.services.impl;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import masera.deviajeusersandauth.dtos.get.PassportDto;
 import masera.deviajeusersandauth.dtos.get.UserDto;
 import masera.deviajeusersandauth.dtos.post.users.SignupRequest;
 import masera.deviajeusersandauth.dtos.post.users.UserBase;
 import masera.deviajeusersandauth.dtos.post.users.UserCreateRequest;
 import masera.deviajeusersandauth.dtos.put.UserPut;
 import masera.deviajeusersandauth.dtos.responses.MessageResponse;
-import masera.deviajeusersandauth.entities.DniTypeEntity;
+import masera.deviajeusersandauth.entities.PassportEntity;
 import masera.deviajeusersandauth.entities.RoleEntity;
 import masera.deviajeusersandauth.entities.UserEntity;
 import masera.deviajeusersandauth.entities.UserRoleEntity;
 import masera.deviajeusersandauth.exceptions.EmailAlreadyExistsException;
 import masera.deviajeusersandauth.exceptions.ResourceNotFoundException;
 import masera.deviajeusersandauth.exceptions.UsernameAlreadyExistsException;
-import masera.deviajeusersandauth.repositories.DniTypeRepository;
+import masera.deviajeusersandauth.repositories.PassportRepository;
 import masera.deviajeusersandauth.repositories.RoleRepository;
 import masera.deviajeusersandauth.repositories.UserRepository;
 import masera.deviajeusersandauth.repositories.UserRoleRepository;
+import masera.deviajeusersandauth.services.interfaces.EmailService;
 import masera.deviajeusersandauth.services.interfaces.UserService;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * Implementación del servicio de usuario que maneja la lógica de negocio
+ * relacionada con la creación, actualización, obtención y eliminación de usuarios.
+ */
 @Service
 @Data
 @RequiredArgsConstructor
@@ -38,15 +47,18 @@ public class UserServiceImpl implements UserService {
 
   private final UserRoleRepository userRoleRepository;
 
-  private final DniTypeRepository dniTypeRepository;
+  private final PassportRepository passportRepository;
 
   private final PasswordEncoder passwordEncoder;
 
   private final ModelMapper modelMapper;
 
+  private final EmailService emailService;
+
+  private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
   /**
-   * Crea un nuevo usuario desde el rol SuperAdmin y Gerente.
+   * Crea un nuevo usuario desde el rol Administrador y Agente.
    *
    * @param userCreateRequest datos del usuario a crear.
    * @return el usuario creado.
@@ -60,23 +72,16 @@ public class UserServiceImpl implements UserService {
     // Creación del usuario
     UserEntity userEntity = modelMapper.map(userCreateRequest, UserEntity.class);
     userEntity.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
+    userEntity.setIsTemporaryPassword(true);
     userEntity.setActive(true);
     userEntity.setCreatedUser(userCreateRequest.getCreatedUser());
     userEntity.setLastUpdatedUser(userCreateRequest.getCreatedUser());
 
-    // seteo el tipo de dni
-    if (userCreateRequest.getDniTypeId() != null) {
-      DniTypeEntity dniType = dniTypeRepository.findById(userCreateRequest.getDniTypeId())
-              .orElseThrow(() -> new ResourceNotFoundException("DniType not found with id: "
-                      + userCreateRequest.getDniTypeId()));
-      userEntity.setDniType(dniType);
-    }
-
-
     if (userCreateRequest.getRoleIds() != null && !userCreateRequest.getRoleIds().isEmpty()) {
       for (Integer roleId : userCreateRequest.getRoleIds()) {
         RoleEntity role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + roleId));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Role not found with id: " + roleId));
 
         UserRoleEntity userRole = UserRoleEntity.builder()
                 .user(userEntity)
@@ -88,7 +93,25 @@ public class UserServiceImpl implements UserService {
       }
     }
 
-    userRepository.save(userEntity);
+    UserEntity userSaved = userRepository.save(userEntity);
+
+    // Crear pasaporte si se proporciona
+    if (userCreateRequest.getPassport() != null) {
+      PassportEntity passport = modelMapper.map(
+              userCreateRequest.getPassport(), PassportEntity.class);
+      passport.setUser(userSaved);
+      passport.setCreatedUser(userCreateRequest.getCreatedUser());
+      passportRepository.save(passport);
+    }
+
+    // Enviar email al usuario creado por el administrador o el agente
+    try {
+      emailService.sendRegistrationEmail(userEntity, userCreateRequest.getPassword());
+      logger.info("Email de notificación enviado al usuario creado por administrador: {}", userEntity.getEmail());
+    } catch (Exception e) {
+      logger.error("Error al enviar email de notificación: {}", e.getMessage(), e);
+    }
+
     return getUserById(userEntity.getId());
   }
 
@@ -105,13 +128,8 @@ public class UserServiceImpl implements UserService {
 
     UserEntity userEntity = modelMapper.map(signupRequest, UserEntity.class);
     userEntity.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+    userEntity.setIsTemporaryPassword(false);
     userEntity.setActive(true);
-
-    if (signupRequest.getDniTypeId() != null) {
-      DniTypeEntity dniType = dniTypeRepository.findById(signupRequest.getDniTypeId())
-              .orElse(null);
-      userEntity.setDniType(dniType);
-    }
 
     userEntity.setId(null);
     userEntity = userRepository.save(userEntity);
@@ -126,6 +144,21 @@ public class UserServiceImpl implements UserService {
             .role(roleEntity)
             .build();
     userRoleRepository.save(userRole);
+
+    if (signupRequest.getPassport() != null) {
+      PassportEntity passport = modelMapper.map(signupRequest.getPassport(), PassportEntity.class);
+      passport.setUser(userEntity);
+      passportRepository.save(passport);
+    }
+
+    // Enviar email de confirmación
+    try {
+      emailService.sendRegistrationEmail(userEntity);
+      logger.info("Email de confirmación enviado exitosamente a: {}", userEntity.getEmail());
+    } catch (Exception e) {
+      // Log el error pero no interrumpir el flujo de registro
+      logger.error("Error al enviar email de confirmación: {}", e.getMessage(), e);
+    }
 
     return new MessageResponse("User registered successfully!");
   }
@@ -334,14 +367,8 @@ public class UserServiceImpl implements UserService {
             .lastName(user.getLastName())
             .phone(user.getPhone())
             .birthDate(user.getBirthDate())
-            .dni(user.getDni())
             .active(user.getActive())
             .avatarUrl(user.getAvatarUrl());
-
-    // Add DniType if exists
-    if (user.getDniType() != null) {
-      builder.dniType(user.getDniType().getDescription());
-    }
 
     // Add roles
     List<String> roles = userRoleRepository.findByUserIdWithRole(user.getId()).stream()
@@ -349,6 +376,12 @@ public class UserServiceImpl implements UserService {
             .collect(Collectors.toList());
 
     builder.roles(roles);
+
+    Optional<PassportEntity> passport = passportRepository.findByUser(user);
+    if (passport.isPresent()) {
+      PassportDto passportDto = modelMapper.map(passport.get(), PassportDto.class);
+      builder.passport(passportDto);
+    }
 
     return builder.build();
   }

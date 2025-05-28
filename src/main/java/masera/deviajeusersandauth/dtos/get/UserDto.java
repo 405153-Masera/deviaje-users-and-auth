@@ -23,10 +23,9 @@ public class UserDto {
   private String lastName;
   private String phone;
   private LocalDate birthDate;
-  private String dni;
-  private String dniType;
   private Boolean active;
   private String avatarUrl;
   private List<String> roles;
   private UserMembershipDto membership;
+  private PassportDto passport;
 }

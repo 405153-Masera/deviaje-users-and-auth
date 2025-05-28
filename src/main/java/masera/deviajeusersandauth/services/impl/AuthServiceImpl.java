@@ -58,7 +58,6 @@ public class AuthServiceImpl implements AuthService {
               .collect(Collectors.toList());
 
       RefreshTokenEntity refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
-
       return JwtResponse.builder()
               .token(jwt)
               .refreshToken(refreshToken.getToken())
