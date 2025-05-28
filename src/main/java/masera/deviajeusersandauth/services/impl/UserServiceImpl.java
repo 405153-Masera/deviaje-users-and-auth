@@ -17,6 +17,7 @@ import masera.deviajeusersandauth.entities.RoleEntity;
 import masera.deviajeusersandauth.entities.UserEntity;
 import masera.deviajeusersandauth.entities.UserRoleEntity;
 import masera.deviajeusersandauth.exceptions.EmailAlreadyExistsException;
+import masera.deviajeusersandauth.exceptions.PassportAlreadyExistsException;
 import masera.deviajeusersandauth.exceptions.ResourceNotFoundException;
 import masera.deviajeusersandauth.exceptions.UsernameAlreadyExistsException;
 import masera.deviajeusersandauth.repositories.PassportRepository;
@@ -118,13 +119,7 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public MessageResponse registerUser(SignupRequest signupRequest) {
-    if (userRepository.existsByUsername(signupRequest.getUsername())) {
-      throw new UsernameAlreadyExistsException("Error: Username is already taken!");
-    }
-
-    if (userRepository.existsByEmail(signupRequest.getEmail())) {
-      throw new EmailAlreadyExistsException("Error: Email is already in use!");
-    }
+    validateUser(signupRequest);
 
     UserEntity userEntity = modelMapper.map(signupRequest, UserEntity.class);
     userEntity.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
@@ -176,6 +171,11 @@ public class UserServiceImpl implements UserService {
   private void validateUser(UserBase userBase) {
     validateUsername(userBase.getUsername());
     validateEmail(userBase.getEmail());
+
+    // Validar pasaporte si se proporciona
+    if (userBase.getPassport() != null && userBase.getPassport().getPassportNumber() != null) {
+      validatePassport(userBase.getPassport().getPassportNumber());
+    }
   }
 
   /**
@@ -197,6 +197,17 @@ public class UserServiceImpl implements UserService {
   private void validateEmail(String email) {
     if (userRepository.existsByEmail(email)) {
       throw new EmailAlreadyExistsException("Email is already in use");
+    }
+  }
+
+  /**
+   * Valida si el número de pasaporte ya existe en la base de datos.
+   *
+   * @param passportNumber número de pasaporte a validar.
+   */
+  private void validatePassport(String passportNumber) {
+    if (passportRepository.existsByPassportNumber(passportNumber)) {
+      throw new PassportAlreadyExistsException("Passport number is already registered");
     }
   }
 

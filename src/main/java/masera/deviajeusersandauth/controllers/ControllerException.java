@@ -8,6 +8,7 @@ import lombok.Data;
 import masera.deviajeusersandauth.dtos.common.ErrorApi;
 import masera.deviajeusersandauth.exceptions.EmailAlreadyExistsException;
 import masera.deviajeusersandauth.exceptions.InvalidResetTokenException;
+import masera.deviajeusersandauth.exceptions.PassportAlreadyExistsException;
 import masera.deviajeusersandauth.exceptions.PasswordMismatchException;
 import masera.deviajeusersandauth.exceptions.ResourceNotFoundException;
 import masera.deviajeusersandauth.exceptions.TokenRefreshException;
@@ -53,6 +54,16 @@ public class ControllerException {
    */
   @ExceptionHandler(EmailAlreadyExistsException.class)
   public ResponseEntity<ErrorApi> handleEmailAlreadyExistsException(EmailAlreadyExistsException e) {
+    ErrorApi error = buildError(e.getMessage(), HttpStatus.CONFLICT);
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+  }
+
+  /**
+   * Manejador para PassportAlreadyExistsException (409).
+   */
+  @ExceptionHandler(PassportAlreadyExistsException.class)
+  public ResponseEntity<ErrorApi> handlePassportAlreadyExistsException(
+                                  PassportAlreadyExistsException e) {
     ErrorApi error = buildError(e.getMessage(), HttpStatus.CONFLICT);
     return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
   }
