@@ -32,8 +32,8 @@ public class UserBase {
   private String lastName;
 
   @Pattern(
-          regexp = "^(MALE|FEMALE|OTHER|UNSPECIFIED)$",
-          message = "Gender must be MALE, FEMALE, OTHER, UNSPECIFIED"
+          regexp = "^(MALE|FEMALE|UNSPECIFIED)$",
+          message = "Gender must be MALE, FEMALE, UNSPECIFIED"
   )
   private String gender;
 
