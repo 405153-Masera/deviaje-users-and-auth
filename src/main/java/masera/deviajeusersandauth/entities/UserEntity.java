@@ -57,6 +57,9 @@ public class UserEntity {
   @Column(name = "last_name")
   private String lastName;
 
+  @Column(length = 15)
+  private String gender;
+
   private String phone;
 
   @Column(name = "birth_date")

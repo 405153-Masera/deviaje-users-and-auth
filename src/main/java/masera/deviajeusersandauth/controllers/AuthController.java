@@ -93,7 +93,7 @@ public class AuthController {
   /**
    * Metodo para cambiar la contraseña del usuario.
    *
-   * @param authentication        representa la autenticación del usuario.
+   * @param authentication representa la autenticación del usuario.
    * @param passwordChangeRequest representa la solicitud de cambio de contraseña.
    * @return una respuesta con el mensaje de éxito.
    */

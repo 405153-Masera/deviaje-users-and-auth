@@ -2,9 +2,11 @@ package masera.deviajeusersandauth.dtos.post.users;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import lombok.Data;
+import masera.deviajeusersandauth.password.ValidPassword;
 
 /**
  * Clase base que representa la solicitud para crear un usuario.
@@ -22,11 +24,18 @@ public class UserBase {
   private String email;
 
   @NotBlank(message = "Password is required")
-  @Size(min = 6, max = 40, message = "Password must be between 6 and 40 characters")
+  @ValidPassword
   private String password;
 
   private String firstName;
   private String lastName;
+
+  @Pattern(
+          regexp = "^(MALE|FEMALE|OTHER|UNSPECIFIED)$",
+          message = "Gender must be MALE, FEMALE, OTHER, UNSPECIFIED"
+  )
+  private String gender;
+
   private String phone;
   private LocalDate birthDate;
 
