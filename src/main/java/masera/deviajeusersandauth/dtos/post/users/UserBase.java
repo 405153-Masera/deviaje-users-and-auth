@@ -6,7 +6,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import lombok.Data;
-import masera.deviajeusersandauth.password.ValidPassword;
+import masera.deviajeusersandauth.validatons.adults.Adult;
+import masera.deviajeusersandauth.validatons.password.ValidPassword;
 
 /**
  * Clase base que representa la solicitud para crear un usuario.
@@ -37,6 +38,8 @@ public class UserBase {
   private String gender;
 
   private String phone;
+
+  @Adult
   private LocalDate birthDate;
 
   private PassportRequest passport;

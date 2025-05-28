@@ -1,4 +1,4 @@
-package masera.deviajeusersandauth.password;
+package masera.deviajeusersandauth.validatons.password;
 
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;

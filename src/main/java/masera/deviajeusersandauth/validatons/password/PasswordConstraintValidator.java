@@ -1,4 +1,4 @@
-package masera.deviajeusersandauth.password;
+package masera.deviajeusersandauth.validatons.password;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
