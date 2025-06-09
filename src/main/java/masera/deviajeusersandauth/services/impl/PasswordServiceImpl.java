@@ -1,5 +1,7 @@
 package masera.deviajeusersandauth.services.impl;
 
+import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
 import masera.deviajeusersandauth.dtos.post.ForgotPasswordRequest;
 import masera.deviajeusersandauth.dtos.post.PasswordChangeRequest;
 import masera.deviajeusersandauth.dtos.post.ResetPasswordRequest;
@@ -15,52 +17,56 @@ import masera.deviajeusersandauth.services.interfaces.EmailService;
 import masera.deviajeusersandauth.services.interfaces.PasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
+/**
+ * Implementación del servicio de gestión de contraseñas.
+ * Proporciona funcionalidades para cambiar contraseñas,
+ * recuperar contraseñas olvidadas y restablecer contraseñas.
+ */
 @Service
+@RequiredArgsConstructor
 public class PasswordServiceImpl implements PasswordService {
 
-  @Autowired
-  private UserRepository userRepository;
+  private final UserRepository userRepository;
 
-  @Autowired
-  private PasswordResetTokenRepository resetTokenRepository;
+  private final PasswordResetTokenRepository resetTokenRepository;
 
-  @Autowired
-  private PasswordEncoder passwordEncoder;
+  private final PasswordEncoder passwordEncoder;
 
-  @Autowired
-  private EmailService emailService; // Servicio para enviar emails
+  private final EmailService emailService;
 
-  private Logger logger = LoggerFactory.getLogger(PasswordServiceImpl.class);
+  @Value("${deviaje.app.frontend-url}")
+  private String frontendUrl;
+
+  private final Logger logger = LoggerFactory.getLogger(PasswordServiceImpl.class);
 
   @Override
   @Transactional
   public MessageResponse changePassword(Integer userId, PasswordChangeRequest request) {
     // Validar que las contraseñas coincidan
     if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-      throw new PasswordMismatchException("New password and confirm password do not match");
+      throw new PasswordMismatchException("Las contraseñas no coinciden");
     }
 
     // Obtener usuario
     UserEntity user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    "Usuario no encontrado con id: " + userId));
 
     // Verificar contraseña actual
     if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-      throw new PasswordMismatchException("Current password is incorrect");
+      throw new PasswordMismatchException("La contraseña actual es incorrecta");
     }
 
     // Actualizar contraseña
     user.setPassword(passwordEncoder.encode(request.getNewPassword()));
     userRepository.save(user);
 
-    return new MessageResponse("Password changed successfully");
+    return new MessageResponse("Password cambiada exitosamente", true);
   }
 
   @Override
@@ -71,7 +77,8 @@ public class PasswordServiceImpl implements PasswordService {
 
       // Buscar usuario por email
       UserEntity user = userRepository.findByEmail(request.getEmail())
-              .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getEmail()));
+              .orElseThrow(() -> new ResourceNotFoundException(
+                      "Usuario no encontrado con el email: " + request.getEmail()));
 
       logger.info("Usuario encontrado con ID: {}", user.getId());
 
@@ -85,25 +92,17 @@ public class PasswordServiceImpl implements PasswordService {
       resetToken.setExpiryDate(LocalDateTime.now().plusHours(24));
 
       resetToken = resetTokenRepository.save(resetToken);
-      logger.info("Token creado con ID: {} y valor: {}", resetToken.getId(), resetToken.getToken());
+      this.sendEmailForgotPassword(user.getEmail(), resetToken.getToken());
 
-      // SIMULACIÓN: Imprimir el token en consola en lugar de enviar email
-      System.out.println("========== RECUPERACIÓN DE CONTRASEÑA ==========");
-      System.out.println("Email: " + user.getEmail());
-      System.out.println("Token: " + resetToken.getToken());
-      System.out.println("URL de recuperación: https://deviaje.com/reset-password?token=" + resetToken.getToken());
-      System.out.println("Expira en: " + resetToken.getExpiryDate());
-      System.out.println("=================================================");
-
-      // Verificar que el token sigue existiendo después de la "simulación de envío"
-      boolean tokenExists = resetTokenRepository.findById(resetToken.getId()).isPresent();
-      logger.info("¿El token aún existe después de la simulación de envío? {}", tokenExists);
-
-      // Devolver el token en la respuesta (solo para demo)
-      return new MessageResponse("For demonstration purposes, check console for password reset token. Token: " + resetToken.getToken());
+      return new MessageResponse(
+              "Email enviado exitosamente a: " + user.getEmail(), true);
+    } catch (ResourceNotFoundException e) {
+      logger.info("Intento de recuperación para un email inexistente: {}", request.getEmail());
+      return new MessageResponse("El email no esta registrado", false);
     } catch (Exception e) {
       logger.error("Error en forgotPassword", e);
-      throw e;
+      return new MessageResponse("Ocurrió un error al procesar la solicitud de "
+              + "recuperación de contraseña. Por favor, inténtelo más tarde.", false);
     }
   }
 
@@ -113,16 +112,19 @@ public class PasswordServiceImpl implements PasswordService {
   public MessageResponse resetPassword(ResetPasswordRequest request) {
     // Validar que las contraseñas coincidan
     if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-      throw new PasswordMismatchException("New password and confirm password do not match");
+      throw new PasswordMismatchException("Las contraseñas no coinciden");
     }
 
     // Buscar token
     PasswordResetTokenEntity resetToken = resetTokenRepository.findByToken(request.getToken())
-            .orElseThrow(() -> new InvalidResetTokenException("Invalid or expired password reset token"));
+            .orElseThrow(() ->
+                    new InvalidResetTokenException("El token de "
+                            + "restablecimiento de contraseña no es válido"));
 
     // Verificar que el token no ha expirado y no ha sido usado
     if (resetToken.isExpired() || resetToken.getUsed()) {
-      throw new InvalidResetTokenException("Invalid or expired password reset token");
+      throw new InvalidResetTokenException("El token de restablecimiento "
+              + "de contraseña ha expirado o ya ha sido utilizado");
     }
 
     // Obtener usuario
@@ -136,6 +138,107 @@ public class PasswordServiceImpl implements PasswordService {
     resetToken.setUsed(true);
     resetTokenRepository.save(resetToken);
 
-    return new MessageResponse("Password has been reset successfully");
+    try {
+      String emailSubject = "Confirmación de cambio de contraseña - DeViaje";
+
+      String emailContent =
+              "<html>"
+                      + "<head>"
+                      + "<style>"
+                      + "body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }"
+                      + ".container { max-width: 600px; margin: 0 auto; }"
+                      + ".header { background-color: #8B5CF6; padding: 20px; text-align: center; }"
+                      + ".header h1 { color: white; margin: 0; }"
+                      + ".content { padding: 20px; border: 1px solid #ddd; border-top: none; }"
+                      + ".success-icon { color: #10B981; font-size: 48px; "
+                      + "text-align: center; margin: 20px 0; }"
+                      + ".button { display: inline-block; "
+                      + "background-color: #8B5CF6; color: white; "
+                      + "padding: 10px 20px; text-decoration: none; border-radius: 5px; }"
+                      + ".footer { margin-top: 30px; font-size: 12px; "
+                      + "color: #666; text-align: center; }"
+                      + "</style>"
+                      + "</head>"
+                      + "<body>"
+                      + "<div class='container'>"
+                      + "<div class='header'><h1>DeViaje</h1></div>"
+                      + "<div class='content'>"
+                      + "<h2>Contraseña actualizada exitosamente</h2>"
+                      + "<div class='success-icon'>✓</div>"
+                      + "<p>Hemos actualizado exitosamente la contraseña de su cuenta.</p>"
+                      + "<p>Si usted no realizó este cambio, por "
+                      + "favor contáctenos inmediatamente.</p>"
+                      + "<div style='text-align: center; margin: 30px 0;'>"
+                      + "<a href='" + frontendUrl
+                      + "/user/login' class='button'>Iniciar sesión</a>"
+                      + "</div>"
+                      + "</div>"
+                      + "<div class='footer'>"
+                      + "<p>Este es un correo automático, por favor no responder.<br>"
+                      + "© " + java.time.Year.now().getValue()
+                      + " DeViaje. Todos los derechos reservados.</p>"
+                      + "</div>"
+                      + "</div>"
+                      + "</body>"
+                      + "</html>";
+
+      emailService.sendEmail(user.getEmail(), emailSubject, emailContent);
+      logger.info("Correo de confirmación de cambio de contraseña enviado a: {}", user.getEmail());
+    } catch (Exception e) {
+      // Log del error pero no interrumpir el flujo
+      logger.error("Error al enviar correo de confirmación de cambio de contraseña", e);
+    }
+
+    return new MessageResponse("Contraseña restablecida exitosamente", true);
+  }
+
+  private void sendEmailForgotPassword(String email, String token) throws Exception {
+
+    String resetUrl = frontendUrl + "/user/reset-password?token=" + token;
+    String emailSubject = "Recuperación de contraseña - DeViaje";
+    String emailContent =
+            "<html>"
+                    + "<head>"
+                    + "<style>"
+                    + "body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }"
+                    + ".container { max-width: 600px; margin: 0 auto; }"
+                    + ".header { background-color: #8B5CF6; padding: 20px; text-align: center; }"
+                    + ".header h1 { color: white; margin: 0; }"
+                    + ".content { padding: 20px; border: 1px solid #ddd; border-top: none; }"
+                    + ".button { display: inline-block; background-color: #8B5CF6; color: white; "
+                    + "padding: 10px 20px; text-decoration: none; border-radius: 5px; }"
+                    + ".footer { margin-top: 30px; font-size: 12px; "
+                    + "color: #666; text-align: center; }"
+                    + "</style>"
+                    + "</head>"
+                    + "<body>"
+                    + "<div class='container'>"
+                    + "<div class='header'><h1>DeViaje</h1></div>"
+                    + "<div class='content'>"
+                    + "<h2>Recuperación de Contraseña</h2>"
+                    + "<p>Hemos recibido una solicitud "
+                    + "para restablecer la contraseña de su cuenta.</p>"
+                    + "<p>Si no solicitó un restablecimiento de "
+                    + "contraseña, puede ignorar este correo "
+                    + "electrónico o contactarnos si tiene alguna inquietud.</p>"
+                    + "<p>Para restablecer su contraseña, haga clic en el siguiente enlace:</p>"
+                    + "<div style='text-align: center; margin: 30px 0;'>"
+                    + "<a href='" + resetUrl + "' class='button'>Restablecer mi contraseña</a>"
+                    + "</div>"
+                    + "<p>Este enlace expirará en 24 horas.</p>"
+                    + "<p>Si el botón no funciona, también puede "
+                    + "copiar y pegar la siguiente URL en su navegador:</p>"
+                    + "<p style='word-break: break-all;'>" + resetUrl + "</p>"
+                    + "</div>"
+                    + "<div class='footer'>"
+                    + "<p>Este es un correo automático, por favor no responder.<br>"
+                    + "© " + java.time.Year.now().getValue()
+                    + " DeViaje. Todos los derechos reservados.</p>"
+                    + "</div>"
+                    + "</div>"
+                    + "</body>"
+                    + "</html>";
+
+    emailService.sendEmail(email, emailSubject, emailContent);
   }
 }

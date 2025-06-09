@@ -71,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
     } catch (Exception e) {
       // Registro detallado para depuración
       e.printStackTrace();
-      throw new RuntimeException("Authentication failed: " + e.getMessage(), e);
+      throw new RuntimeException("La autenticación fallo: " + e.getMessage(), e);
     }
   }
 
@@ -101,13 +101,13 @@ public class AuthServiceImpl implements AuthService {
                       .build();
             })
             .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
-                    "Refresh token is not in database!"));
+                    "Refresh token no encontrado"));
   }
 
   @Override
   public MessageResponse logoutUser(Integer userId) {
     refreshTokenService.deleteByUserId(userId);
-    return new MessageResponse("Log out successful!");
+    return new MessageResponse("Usuario desconectado exitosamente", true);
   }
 
   @Override

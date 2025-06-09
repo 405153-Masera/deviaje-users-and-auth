@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
       for (Integer roleId : userCreateRequest.getRoleIds()) {
         RoleEntity role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Role not found with id: " + roleId));
+                        "Rol no encontrado con el id " + roleId));
 
         UserRoleEntity userRole = UserRoleEntity.builder()
                 .user(userEntity)
@@ -108,7 +108,8 @@ public class UserServiceImpl implements UserService {
     // Enviar email al usuario creado por el administrador o el agente
     try {
       emailService.sendRegistrationEmail(userEntity, userCreateRequest.getPassword());
-      logger.info("Email de notificación enviado al usuario creado por administrador: {}", userEntity.getEmail());
+      logger.info("Email de notificación enviado al usuario creado "
+              + "por administrador: {}", userEntity.getEmail());
     } catch (Exception e) {
       logger.error("Error al enviar email de notificación: {}", e.getMessage(), e);
     }
@@ -130,7 +131,7 @@ public class UserServiceImpl implements UserService {
     userEntity = userRepository.save(userEntity);
 
     RoleEntity roleEntity = roleRepository.findByDescription("CLIENTE")
-            .orElseThrow(() -> new RuntimeException("Error: Role CLIENTE is not found."));
+            .orElseThrow(() -> new RuntimeException("Error: Rol CLIENTE no se encontró"));
 
 
     // Assign roles to user
@@ -155,7 +156,7 @@ public class UserServiceImpl implements UserService {
       logger.error("Error al enviar email de confirmación: {}", e.getMessage(), e);
     }
 
-    return new MessageResponse("User registered successfully!");
+    return new MessageResponse("Usuario registrado exitosamente", true);
   }
 
   @Override
@@ -185,7 +186,7 @@ public class UserServiceImpl implements UserService {
    */
   private void validateUsername(String username) {
     if (userRepository.existsByUsername(username)) {
-      throw new UsernameAlreadyExistsException("Username is already taken");
+      throw new UsernameAlreadyExistsException("Este nombre de usuario ya está en uso");
     }
   }
 
@@ -196,7 +197,7 @@ public class UserServiceImpl implements UserService {
    */
   private void validateEmail(String email) {
     if (userRepository.existsByEmail(email)) {
-      throw new EmailAlreadyExistsException("Email is already in use");
+      throw new EmailAlreadyExistsException("Este correo electrónico ya está registrado");
     }
   }
 
@@ -207,7 +208,7 @@ public class UserServiceImpl implements UserService {
    */
   private void validatePassport(String passportNumber) {
     if (passportRepository.existsByPassportNumber(passportNumber)) {
-      throw new PassportAlreadyExistsException("Passport number is already registered");
+      throw new PassportAlreadyExistsException("Este número de pasaporte ya está registrado");
     }
   }
 
@@ -332,7 +333,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public UserDto getUserById(Integer id) {
     UserEntity user = userRepository.findByIdWithRoles(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    "Usuario no encontrado con el id: " + id));
 
     return mapUserToUserResponse(user);
   }
@@ -354,7 +356,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public void activateUser(Integer id) {
     UserEntity user = userRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    "Usuario no encontrado con el id: " + id));
 
     user.setActive(true);
     userRepository.save(user);
@@ -363,7 +366,8 @@ public class UserServiceImpl implements UserService {
   @Override
   public void deactivateUser(Integer id) {
     UserEntity user = userRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    "Usuario no encontrado con id: " + id));
 
     user.setActive(false);
     userRepository.save(user);

@@ -28,6 +28,9 @@ public class EmailServiceImpl implements EmailService {
   @Value("${spring.mail.username}")
   private String fromEmail;
 
+  @Value("${deviaje.app.frontend-url}")
+  private String frontendUrl;
+
   private final JavaMailSender mailSender;
 
   /**
@@ -112,7 +115,8 @@ public class EmailServiceImpl implements EmailService {
                     + "<p>Ya puedes comenzar a explorar nuestras opciones de viaje y "
                     + "realizar reservas de vuelos, hoteles y paquetes turísticos.</p>"
                     + "<div style='text-align: center;'>"
-                    + "<a href='https://deviaje.com/login' class='button'>Iniciar Sesión</a>"
+                    + "<a href='" + frontendUrl + "/user/login"
+                    + "' class='button'>Iniciar Sesión</a>"
                     + "</div>"
                     + "<p>Si tienes alguna pregunta o necesitas asistencia, "
                     + "no dudes en contactar a nuestro equipo de soporte.</p>"
@@ -171,7 +175,8 @@ public class EmailServiceImpl implements EmailService {
                     + "tu contraseña temporal la primera vez que inicies sesión."
                     + "</div>"
                     + "<div style='text-align: center;'>"
-                    + "<a href='https://deviaje.com/login' class='button'>Iniciar Sesión</a>"
+                    + "<a href='" + frontendUrl + "/user/login"
+                    + "' class='button'>Iniciar Sesión</a>"
                     + "</div>"
                     + "<p>Si tienes alguna pregunta o necesitas asistencia, no "
                     + "dudes en contactar a nuestro equipo de soporte.</p>"

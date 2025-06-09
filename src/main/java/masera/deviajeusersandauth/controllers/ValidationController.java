@@ -3,6 +3,7 @@ package masera.deviajeusersandauth.controllers;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import masera.deviajeusersandauth.services.impl.VerificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * email, username y número de pasaporte. Permite al
  * frontend verificar si estos datos ya existen en la base de datos mientras el usuario los ingresa.
  */
+@Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/validation")
@@ -38,6 +40,7 @@ public class ValidationController {
     boolean isUnique = verificationService.isUsernameUnique(username);
     Map<String, Boolean> response = new HashMap<>();
     response.put("isUnique", isUnique);
+    log.info("Verificación de nombre de usuario: {} - Único: {}", username, isUnique);
     return ResponseEntity.ok(response);
   }
 

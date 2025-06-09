@@ -109,7 +109,8 @@ public class UserController {
   @PreAuthorize("hasAuthority('ADMINISTRADOR')")
   public ResponseEntity<MessageResponse> deleteUser(@PathVariable Integer id) {
     userService.deactivateUser(id);
-    return ResponseEntity.ok(new MessageResponse("User deactivated successfully"));
+    return ResponseEntity.ok(new MessageResponse(
+            "Usuario dado de baja correctamente", true));
   }
 
   /**
@@ -122,6 +123,7 @@ public class UserController {
   @PreAuthorize("hasAuthority('ADMINISTRADOR')")
   public ResponseEntity<MessageResponse> activateUser(@PathVariable Integer id) {
     userService.activateUser(id);
-    return ResponseEntity.ok(new MessageResponse("User activated successfully"));
+    return ResponseEntity.ok(new MessageResponse(
+            "Usuario activado correctamente", true));
   }
 }

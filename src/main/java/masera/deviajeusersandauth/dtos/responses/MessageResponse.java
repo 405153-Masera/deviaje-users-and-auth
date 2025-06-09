@@ -15,4 +15,5 @@ import lombok.NoArgsConstructor;
 public class MessageResponse {
 
   private String message;
+  private boolean isSuccess;
 }
