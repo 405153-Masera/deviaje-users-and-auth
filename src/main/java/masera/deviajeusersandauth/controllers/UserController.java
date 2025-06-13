@@ -37,7 +37,6 @@ public class UserController {
    * @return Lista de usuarios.
    */
   @GetMapping
-  @PreAuthorize("hasAnyAuthority('ADMINISTRADOR')")
   public ResponseEntity<List<UserDto>> getAllUsers() {
     List<UserDto> users = userService.getAllUsers();
     return ResponseEntity.ok(users);
@@ -50,7 +49,6 @@ public class UserController {
    * @return Lista de usuarios con el rol especificado.
    */
   @GetMapping("/role/{role}")
-  @PreAuthorize("hasAnyAuthority('ADMINISTRADOR')")
   public ResponseEntity<List<UserDto>> getUsersByRole(@PathVariable String role) {
     List<UserDto> users = userService.getUsersByRole(role);
     return ResponseEntity.ok(users);
@@ -63,8 +61,6 @@ public class UserController {
    * @return Usuario encontrado.
    */
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyAuthority('ADMINISTRADOR')"
-          + " or #id == authentication.principal.id")
   public ResponseEntity<UserDto> getUserById(@PathVariable Integer id) {
     UserDto user = userService.getUserById(id);
     return ResponseEntity.ok(user);
@@ -77,7 +73,7 @@ public class UserController {
    * @return Usuario creado.
    */
   @PostMapping
-  @PreAuthorize("hasAnyAuthority('ADMINISTRADOR')")
+  @PreAuthorize("permitAll()")
   public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserCreateRequest request) {
     UserDto createdUser = userService.createUser(request);
     return ResponseEntity.ok(createdUser);
@@ -91,8 +87,6 @@ public class UserController {
    * @return Usuario actualizado.
    */
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyAuthority('ADMINISTRADOR') "
-          + "or #id == authentication.principal.id")
   public ResponseEntity<UserDto> updateUser(@PathVariable Integer id,
                                             @Valid @RequestBody UserPut request) {
     UserDto updatedUser = userService.updateUser(id, request);
@@ -106,7 +100,6 @@ public class UserController {
    * @return Mensaje de respuesta.
    */
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAuthority('ADMINISTRADOR')")
   public ResponseEntity<MessageResponse> deleteUser(@PathVariable Integer id) {
     userService.deactivateUser(id);
     return ResponseEntity.ok(new MessageResponse(

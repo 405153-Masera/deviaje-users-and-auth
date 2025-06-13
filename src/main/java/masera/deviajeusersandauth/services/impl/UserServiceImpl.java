@@ -114,7 +114,7 @@ public class UserServiceImpl implements UserService {
       logger.error("Error al enviar email de notificación: {}", e.getMessage(), e);
     }
 
-    return getUserById(userEntity.getId());
+    return modelMapper.map(userSaved, UserDto.class);
   }
 
   @Override
