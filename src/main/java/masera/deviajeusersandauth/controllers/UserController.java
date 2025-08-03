@@ -32,6 +32,18 @@ public class UserController {
   private final UserService userService;
 
   /**
+   * Endpoint para obtener un usuario por su username con datos del pasaporte.
+   *
+   * @param username Username del usuario a buscar.
+   * @return Usuario encontrado con datos del pasaporte.
+   */
+  @GetMapping("/username/{username}")
+  public ResponseEntity<UserDto> getUserByUsername(@PathVariable String username) {
+    UserDto user = userService.getUserByUsername(username);
+    return ResponseEntity.ok(user);
+  }
+
+  /**
    * Endpoint para obtener todos los usuarios.
    *
    * @return Lista de usuarios.

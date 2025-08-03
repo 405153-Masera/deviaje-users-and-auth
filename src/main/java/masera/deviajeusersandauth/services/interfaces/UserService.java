@@ -50,6 +50,14 @@ public interface UserService {
   UserDto getUserById(Integer id);
 
   /**
+   * Obtiene un usuario por su username incluyendo datos del pasaporte.
+   *
+   * @param username Username del usuario a buscar.
+   * @return Usuario con datos del pasaporte.
+   */
+  UserDto getUserByUsername(String username);
+
+  /**
    * Obtiene todos los usuarios registrados en la aplicación.
    *
    * @return la lista de usuarios.

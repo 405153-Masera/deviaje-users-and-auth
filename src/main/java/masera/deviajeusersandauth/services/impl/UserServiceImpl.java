@@ -340,6 +340,15 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public UserDto getUserByUsername(String username) {
+    UserEntity userEntity = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    "Usuario no encontrado con username: " + username));
+
+    return mapUserToUserResponse(userEntity);
+  }
+
+  @Override
   public List<UserDto> getAllUsers() {
     return userRepository.findAll().stream()
             .map(this::mapUserToUserResponse)
