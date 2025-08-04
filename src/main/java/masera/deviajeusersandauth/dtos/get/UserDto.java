@@ -22,6 +22,7 @@ public class UserDto {
   private String firstName;
   private String lastName;
   private String gender;
+  private String countryCallingCode;
   private String phone;
   private LocalDate birthDate;
   private Boolean active;

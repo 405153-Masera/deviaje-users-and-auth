@@ -60,6 +60,10 @@ public class UserEntity {
   @Column(length = 15)
   private String gender;
 
+  @Column(name = "country_calling_code", length = 5)
+  private String countryCallingCode;
+
+  @Column(length = 20)
   private String phone;
 
   @Column(name = "birth_date")
