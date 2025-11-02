@@ -55,9 +55,7 @@ public class SecurityConfig {
    */
   @Bean
   public DaoAuthenticationProvider authenticationProvider() {
-    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-
-    authProvider.setUserDetailsService(userDetailsService);
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
     authProvider.setPasswordEncoder(passwordEncoder());
 
     return authProvider;
@@ -69,11 +67,9 @@ public class SecurityConfig {
    *
    * @param authConfig Configuración de autenticación
    * @return AuthenticationManager
-   * @throws Exception si ocurre un error al configurar el AuthenticationManager
    */
   @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
-          throws Exception {
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) {
     return authConfig.getAuthenticationManager();
   }
 
@@ -95,10 +91,9 @@ public class SecurityConfig {
    *
    * @param http Configuración de seguridad HTTP
    * @return SecurityFilterChain
-   * @throws Exception si ocurre un error al configurar la cadena de filtros
    */
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) {
     http
             .csrf(AbstractHttpConfigurer::disable) // Deshabilita la protección CSRF
             .cors(cors -> cors.configure(http)) // habilita CORS

@@ -2,6 +2,8 @@ package masera.deviajeusersandauth.dtos.get;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +26,8 @@ public class UserDto {
   private String gender;
   private String countryCallingCode;
   private String phone;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   private LocalDate birthDate;
   private Boolean active;
   private String avatarUrl;

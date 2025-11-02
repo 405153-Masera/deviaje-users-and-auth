@@ -1,5 +1,6 @@
 package masera.deviajeusersandauth.security.services;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import masera.deviajeusersandauth.entities.UserEntity;
 import masera.deviajeusersandauth.repositories.UserRepository;
@@ -20,7 +21,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   private final UserRepository userRepository;
 
   @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+  @NonNull
+  public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
     UserEntity user = userRepository.findByUsernameWithRoles(username)
             .orElseThrow(() ->
                     new UsernameNotFoundException("User not found with username: " + username));

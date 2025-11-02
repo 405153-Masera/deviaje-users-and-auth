@@ -2,14 +2,14 @@ package masera.deviajeusersandauth.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -32,7 +32,7 @@ public class JwtUtils {
    *
    * @return la clave de firma (signing key).
    */
-  private Key getSigningKey() {
+  private SecretKey getSigningKey() {
     byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
     return Keys.hmacShaKeyFor(keyBytes);
   }
@@ -77,11 +77,11 @@ public class JwtUtils {
    * @return las reclamaciones extraídas.
    */
   private Claims extractAllClaims(String token) {
-    return Jwts.parserBuilder()
-        .setSigningKey(getSigningKey())
+    return Jwts.parser()
+        .verifyWith(getSigningKey())
         .build()
-        .parseClaimsJws(token)
-        .getBody();
+        .parseSignedClaims(token)
+        .getPayload();
   }
 
   /**
@@ -117,12 +117,15 @@ public class JwtUtils {
    * @return el token generado.
    */
   private String createToken(Map<String, Object> claims, String subject, long expiration) {
+    Instant now = Instant.now();
+    Instant expiryDate = now.plusMillis(expiration);
+
     return Jwts.builder()
-            .setClaims(claims)
-            .setSubject(subject)
-            .setIssuedAt(new Date(System.currentTimeMillis()))
-            .setExpiration(new Date(System.currentTimeMillis() + expiration))
-            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+            .claims(claims)
+            .subject(subject)
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(expiryDate))
+            .signWith(getSigningKey())
             .compact();
   }
 

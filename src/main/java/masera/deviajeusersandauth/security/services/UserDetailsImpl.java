@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import masera.deviajeusersandauth.entities.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -67,6 +68,7 @@ public class UserDetailsImpl implements UserDetails {
   }
 
   @Override
+  @NonNull
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return authorities;
   }
@@ -77,6 +79,7 @@ public class UserDetailsImpl implements UserDetails {
   }
 
   @Override
+  @NonNull
   public String getUsername() {
     return username;
   }

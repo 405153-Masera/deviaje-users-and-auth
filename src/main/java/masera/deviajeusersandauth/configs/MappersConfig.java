@@ -48,5 +48,4 @@ public class MappersConfig {
     objectMapper.registerModule(new JavaTimeModule());
     return objectMapper;
   }
-
 }

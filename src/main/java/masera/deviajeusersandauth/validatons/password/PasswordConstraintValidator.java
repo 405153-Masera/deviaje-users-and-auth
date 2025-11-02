@@ -5,8 +5,6 @@ import jakarta.validation.ConstraintValidatorContext;
 import java.util.Arrays;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
-import org.passay.EnglishSequenceData;
-import org.passay.IllegalSequenceRule;
 import org.passay.LengthRule;
 import org.passay.PasswordData;
 import org.passay.PasswordValidator;

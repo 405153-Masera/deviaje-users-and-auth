@@ -391,6 +391,7 @@ public class UserServiceImpl implements UserService {
             .lastName(user.getLastName())
             .gender(user.getGender())
             .phone(user.getPhone())
+            .countryCallingCode(user.getCountryCallingCode())
             .birthDate(user.getBirthDate())
             .active(user.getActive())
             .avatarUrl(user.getAvatarUrl());
