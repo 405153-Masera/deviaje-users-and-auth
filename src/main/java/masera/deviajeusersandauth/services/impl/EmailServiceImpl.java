@@ -192,4 +192,134 @@ public class EmailServiceImpl implements EmailService {
 
     sendEmail(to, subject, content);
   }
+
+  @Override
+  public void sendPasswordResetByAdminEmail(UserEntity user, String temporaryPassword) {
+    try {
+      MimeMessage message = mailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+      helper.setFrom(fromEmail);
+      helper.setTo(user.getEmail());
+      helper.setSubject("Tu contraseña de DeViaje ha sido reseteada");
+
+      String htmlContent = String.format("""
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { 
+            background-color: #FF9800; 
+            padding: 20px; 
+            text-align: center; 
+            border-radius: 10px 10px 0 0;
+          }
+          .header h1 { color: white; margin: 0; }
+          .content { 
+            padding: 30px; 
+            border: 1px solid #ddd; 
+            border-top: none; 
+            background-color: #fff;
+            border-radius: 0 0 10px 10px;
+          }
+          .password-box { 
+            background-color: #f5f5f5; 
+            padding: 20px; 
+            border-radius: 5px; 
+            margin: 20px 0;
+            border-left: 4px solid #FF9800;
+          }
+          .password-box p { margin: 5px 0; font-size: 14px; }
+          .password-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FF9800;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+          }
+          .warning-box { 
+            background-color: #fff3cd; 
+            border-left: 4px solid #ffc107; 
+            padding: 15px; 
+            margin: 20px 0;
+            border-radius: 5px;
+          }
+          .warning-box p { margin: 0; }
+          .button { 
+            display: inline-block; 
+            background-color: #FF9800; 
+            color: white; 
+            padding: 12px 30px; 
+            text-decoration: none; 
+            border-radius: 5px;
+            font-weight: bold;
+          }
+          .footer { 
+            margin-top: 30px; 
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #777; 
+            font-size: 12px;
+            text-align: center;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>DeViaje</h1>
+          </div>
+          <div class="content">
+            <h2 style="color: #FF9800; margin-top: 0;">Contraseña Reseteada</h2>
+            
+            <p>Hola <strong>%s</strong>,</p>
+            
+            <p>Un administrador ha reseteado tu contraseña en el sistema DeViaje por motivos de seguridad.</p>
+            
+            <div class="password-box">
+              <p><strong>Usuario:</strong> %s</p>
+              <p><strong>Nueva contraseña temporal:</strong></p>
+              <p class="password-value">%s</p>
+            </div>
+            
+            <div class="warning-box">
+              <p><strong>IMPORTANTE:</strong> Debes cambiar esta contraseña temporal en tu próximo inicio de sesión. Por seguridad, no podrás acceder al sistema hasta que establezcas una contraseña nueva.</p>
+            </div>
+            
+            <p style="text-align: center; margin: 30px 0;">
+              <a href="%s/user/login" class="button">Iniciar Sesión Ahora</a>
+            </p>
+            
+            <p style="margin-top: 30px; font-size: 13px; color: #666;">
+              <strong>Consejos de seguridad:</strong><br>
+              • Cambia tu contraseña inmediatamente después de iniciar sesión<br>
+              • Usa una contraseña única y segura<br>
+              • No compartas tu contraseña con nadie
+            </p>
+          </div>
+          <div class="footer">
+            <p>Este es un correo automático, por favor no respondas a este mensaje.<br>
+            © %d DeViaje. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+      """,
+              user.getFirstName() != null ? user.getFirstName() : user.getUsername(),
+              user.getUsername(),
+              temporaryPassword,
+              frontendUrl,
+              java.time.Year.now().getValue()
+      );
+
+      helper.setText(htmlContent, true);
+      mailSender.send(message);
+
+      logger.info("✅ Email de reseteo de contraseña enviado a: {}", user.getEmail());
+    } catch (Exception e) {
+      logger.error("❌ Error al enviar email de reseteo: {}", e.getMessage(), e);
+      throw new RuntimeException("Error al enviar email de reseteo de contraseña", e);
+    }
+  }
 }

@@ -85,4 +85,14 @@ public interface UserService {
    * @param id del usuario a desactivar.
    */
   void deactivateUser(Integer id);
+
+  /**
+   * Resetea la contraseña de un usuario por parte de un administrador.
+   * Genera una contraseña temporal aleatoria, la envía por email
+   * y marca isTemporaryPassword = true.
+   *
+   * @param id ID del usuario cuya contraseña será reseteada.
+   * @return Mensaje indicando el resultado de la operación.
+   */
+  MessageResponse adminResetPassword(Integer id);
 }

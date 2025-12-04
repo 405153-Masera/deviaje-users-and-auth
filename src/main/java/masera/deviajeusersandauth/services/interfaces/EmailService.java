@@ -36,4 +36,14 @@ public interface EmailService {
    * @throws Exception si ocurre un error al enviar el correo electrónico
    */
   void sendRegistrationEmail(UserEntity user, String plainPassword) throws Exception;
+
+  /**
+   * Envía un email cuando un administrador resetea la contraseña de un usuario.
+   * Incluye la contraseña temporal generada automáticamente.
+   *
+   * @param user Usuario al que se le resetea la contraseña.
+   * @param temporaryPassword Contraseña temporal generada automáticamente.
+   * @throws Exception si ocurre un error al enviar el correo electrónico
+   */
+  void sendPasswordResetByAdminEmail(UserEntity user, String temporaryPassword) throws Exception;
 }

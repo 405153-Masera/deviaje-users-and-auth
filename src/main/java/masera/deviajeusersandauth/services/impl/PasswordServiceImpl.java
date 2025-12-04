@@ -64,6 +64,7 @@ public class PasswordServiceImpl implements PasswordService {
 
     // Actualizar contraseña
     user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    user.setIsTemporaryPassword(false);
     userRepository.save(user);
 
     return new MessageResponse("Password cambiada exitosamente", true);

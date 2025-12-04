@@ -9,13 +9,13 @@ import masera.deviajeusersandauth.dtos.responses.JwtResponse;
 import masera.deviajeusersandauth.dtos.responses.MessageResponse;
 import masera.deviajeusersandauth.entities.RefreshTokenEntity;
 import masera.deviajeusersandauth.entities.UserEntity;
+import masera.deviajeusersandauth.exceptions.ResourceNotFoundException;
 import masera.deviajeusersandauth.exceptions.TokenRefreshException;
 import masera.deviajeusersandauth.repositories.UserRepository;
 import masera.deviajeusersandauth.security.jwt.JwtUtils;
 import masera.deviajeusersandauth.security.services.UserDetailsImpl;
 import masera.deviajeusersandauth.services.interfaces.AuthService;
 import masera.deviajeusersandauth.services.interfaces.RefreshTokenService;
-import org.apache.coyote.BadRequestException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -58,6 +58,10 @@ public class AuthServiceImpl implements AuthService {
               .collect(Collectors.toList());
 
       RefreshTokenEntity refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+
+      UserEntity user = userRepository.findById(userDetails.getId())
+              .orElseThrow(() -> new ResourceNotFoundException(
+                      "Usuario no encontrado con id: " + userDetails.getId()));
       return JwtResponse.builder()
               .token(jwt)
               .refreshToken(refreshToken.getToken())
@@ -65,6 +69,7 @@ public class AuthServiceImpl implements AuthService {
               .username(userDetails.getUsername())
               .email(userDetails.getEmail())
               .roles(roles)
+              .isTemporaryPassword(user.getIsTemporaryPassword())
               .build();
     } catch (BadCredentialsException e) {
       throw e;
@@ -83,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
             .map(refreshTokenService::verifyExpiration)
             .map(RefreshTokenEntity::getUser)
             .map(user -> {
-              // Usar el nuevo método del JwtUtils actualizado para generar token
+              // Usar el nuevo metodo del JwtUtils actualizado para generar token
               UserDetailsImpl userDetails = UserDetailsImpl.build(user);
               String token = jwtUtils.generateToken(userDetails);
 
@@ -98,6 +103,7 @@ public class AuthServiceImpl implements AuthService {
                       .username(user.getUsername())
                       .email(user.getEmail())
                       .roles(roles)
+                      .isTemporaryPassword(user.getIsTemporaryPassword())
                       .build();
             })
             .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,

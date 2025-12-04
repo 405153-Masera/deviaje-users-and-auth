@@ -5,13 +5,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,42 +18,39 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * La clase {@code RoleEntity} representa un rol.
- * Referencia a la tabla llamada "roles".
+ * Entidad que representa una respuesta a una review.
+ * Cualquier usuario registrado puede responder.
  */
 @Entity
-@Table(name = "roles")
+@Table(name = "reviews_responses")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RoleEntity {
+public class ReviewResponseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Integer id;
+  private Long id;
 
-  @Column(nullable = false, unique = true)
-  private String description;
+  @ManyToOne
+  @JoinColumn(name = "review_id", nullable = false)
+  private ReviewEntity review;
 
-  @Column(name = "created_datetime")
+  @ManyToOne
+  @JoinColumn(name = "user_id", nullable = false)
+  private UserEntity user;
+
+  @Column(columnDefinition = "TEXT", nullable = false)
+  private String comment;
+
   private LocalDateTime createdDatetime;
 
-  @Column(name = "created_user")
-  private Integer createdUser;
-
-  @Column(name = "last_updated_datetime")
   private LocalDateTime lastUpdatedDatetime;
 
-  @Column(name = "last_updated_user")
-  private Integer lastUpdatedUser;
-
-  @OneToMany(mappedBy = "role")
-  private Set<UserRoleEntity> userRoles = new HashSet<>();
-
   /**
-   * Metodo que se ejecuta antes de persistir la entidad.
+   * Metodo que se ejecuta al crear en la base de datos.
    */
   @PrePersist
   protected void onCreate() {
@@ -63,7 +59,7 @@ public class RoleEntity {
   }
 
   /**
-   * Metodo que se ejecuta antes de actualizar la entidad.
+   * Metodo que se ejecuta al actualizar en la base de datos.
    */
   @PreUpdate
   protected void onUpdate() {

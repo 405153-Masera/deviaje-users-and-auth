@@ -1,5 +1,7 @@
 package masera.deviajeusersandauth.services.impl;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -7,6 +9,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import masera.deviajeusersandauth.dtos.get.PassportDto;
 import masera.deviajeusersandauth.dtos.get.UserDto;
+import masera.deviajeusersandauth.dtos.post.users.PassportRequest;
 import masera.deviajeusersandauth.dtos.post.users.SignupRequest;
 import masera.deviajeusersandauth.dtos.post.users.UserBase;
 import masera.deviajeusersandauth.dtos.post.users.UserCreateRequest;
@@ -56,6 +59,13 @@ public class UserServiceImpl implements UserService {
 
   private final EmailService emailService;
 
+  private static final String PASSWORD_CHARS =
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!";
+
+  private static final int TEMP_PASSWORD_LENGTH = 12;
+
+  private static final SecureRandom secureRandom = new SecureRandom();
+
   private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
   /**
@@ -70,7 +80,6 @@ public class UserServiceImpl implements UserService {
 
     validateUser(userCreateRequest);
 
-    // Creación del usuario
     UserEntity userEntity = modelMapper.map(userCreateRequest, UserEntity.class);
     userEntity.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
     userEntity.setIsTemporaryPassword(true);
@@ -95,8 +104,6 @@ public class UserServiceImpl implements UserService {
     }
 
     UserEntity userSaved = userRepository.save(userEntity);
-
-    // Crear pasaporte si se proporciona
     if (userCreateRequest.getPassport() != null) {
       PassportEntity passport = modelMapper.map(
               userCreateRequest.getPassport(), PassportEntity.class);
@@ -105,7 +112,6 @@ public class UserServiceImpl implements UserService {
       passportRepository.save(passport);
     }
 
-    // Enviar email al usuario creado por el administrador o el agente
     try {
       emailService.sendRegistrationEmail(userEntity, userCreateRequest.getPassword());
       logger.info("Email de notificación enviado al usuario creado "
@@ -160,8 +166,111 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public UserDto updateUser(Integer id, UserPut userCreateRequest) {
-    return null;
+  @Transactional
+  public UserDto updateUser(Integer id, UserPut request) {
+    logger.info("Actualizando usuario con id: {}", id);
+
+    UserEntity user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    "Usuario no encontrado con el id: " + id));
+
+    if (request.getUsername() != null
+            && !request.getUsername().equalsIgnoreCase(user.getUsername())) {
+      if (userRepository.existsByUsername(request.getUsername())) {
+        throw new UsernameAlreadyExistsException(
+                "Este nombre de usuario ya está en uso");
+      }
+      user.setUsername(request.getUsername());
+    }
+
+    if (request.getEmail() != null
+            && !request.getEmail().equalsIgnoreCase(user.getEmail())) {
+      if (userRepository.existsByEmail(request.getEmail())) {
+        throw new EmailAlreadyExistsException(
+                "Este correo electrónico ya está registrado");
+      }
+      user.setEmail(request.getEmail());
+    }
+
+    if (request.getFirstName() != null) {
+      user.setFirstName(request.getFirstName());
+    }
+
+    if (request.getLastName() != null) {
+      user.setLastName(request.getLastName());
+    }
+
+    if (request.getGender() != null) {
+      user.setGender(request.getGender());
+    }
+
+    if (request.getCountryCallingCode() != null) {
+      user.setCountryCallingCode(request.getCountryCallingCode());
+    }
+
+    if (request.getPhone() != null) {
+      user.setPhone(request.getPhone());
+    }
+
+    if (request.getBirthDate() != null) {
+      user.setBirthDate(request.getBirthDate());
+    }
+
+    // Actualizar o crear pasaporte
+    if (request.getPassport() != null) {
+      PassportRequest passportRequest = request.getPassport();
+
+      Optional<PassportEntity> existingPassport = passportRepository.findByUser(user);
+
+      if (existingPassport.isPresent()) {
+        // Actualizar pasaporte existente
+        PassportEntity passport = existingPassport.get();
+
+        // Validar si el número de pasaporte cambió y si ya existe
+        if (passportRequest.getPassportNumber() != null
+                && !passportRequest.getPassportNumber()
+                .equalsIgnoreCase(passport.getPassportNumber())) {
+          if (passportRepository.existsByPassportNumber(
+                  passportRequest.getPassportNumber())) {
+            throw new PassportAlreadyExistsException(
+                    "Este número de pasaporte ya está registrado");
+          }
+          passport.setPassportNumber(passportRequest.getPassportNumber());
+        }
+
+        if (passportRequest.getExpiryDate() != null) {
+          passport.setExpiryDate(passportRequest.getExpiryDate());
+        }
+
+        if (passportRequest.getIssuanceCountry() != null) {
+          passport.setIssuanceCountry(passportRequest.getIssuanceCountry());
+        }
+
+        if (passportRequest.getNationality() != null) {
+          passport.setNationality(passportRequest.getNationality());
+        }
+
+        passportRepository.save(passport);
+      } else {
+        // Crear nuevo pasaporte
+        if (passportRequest.getPassportNumber() != null) {
+          if (passportRepository.existsByPassportNumber(
+                  passportRequest.getPassportNumber())) {
+            throw new PassportAlreadyExistsException(
+                    "Este número de pasaporte ya está registrado");
+          }
+        }
+
+        PassportEntity newPassport = modelMapper.map(passportRequest, PassportEntity.class);
+        newPassport.setUser(user);
+        passportRepository.save(newPassport);
+      }
+    }
+
+    userRepository.save(user);
+
+    logger.info("Usuario {} actualizado exitosamente", user.getUsername());
+    return mapUserToUserResponse(user);
   }
 
   /**
@@ -380,6 +489,99 @@ public class UserServiceImpl implements UserService {
 
     user.setActive(false);
     userRepository.save(user);
+  }
+
+  /**
+   * Resetea la contraseña de un usuario por parte de un administrador.
+   * Genera una contraseña temporal aleatoria y la envía por email.
+   */
+  @Override
+  @Transactional
+  public MessageResponse adminResetPassword(Integer id) {
+    logger.info("🔄 Iniciando reseteo de contraseña por admin para usuario con id: {}", id);
+
+    UserEntity user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    "Usuario no encontrado con el id: " + id));
+
+    logger.info("👤 Usuario encontrado: {} ({})", user.getUsername(), user.getEmail());
+
+    // Generar contraseña temporal aleatoria
+    String temporaryPassword = generateSecureTemporaryPassword();
+
+    logger.info("🔑 Contraseña temporal generada para usuario: {}", user.getUsername());
+
+    // Actualizar contraseña y marcar como temporal
+    user.setPassword(passwordEncoder.encode(temporaryPassword));
+    user.setIsTemporaryPassword(true);
+    user.setLastUpdatedDatetime(LocalDateTime.now());
+
+    userRepository.save(user);
+
+    logger.info("💾 Usuario {} actualizado con contraseña temporal", user.getUsername());
+
+    // Enviar email con contraseña temporal
+    try {
+      emailService.sendPasswordResetByAdminEmail(user, temporaryPassword);
+      logger.info("✅ Email de reseteo enviado exitosamente a: {}", user.getEmail());
+    } catch (Exception e) {
+      logger.error("❌ Error al enviar email de reseteo: {}", e.getMessage(), e);
+      // No lanzar excepción para que el reseteo se complete aunque falle el email
+    }
+
+    return new MessageResponse(
+            "Contraseña reseteada exitosamente. Se envió un email al usuario con la nueva contraseña temporal.",
+            true
+    );
+  }
+
+  /**
+   * Genera una contraseña temporal aleatoria segura.
+   * Garantiza que contenga al menos:
+   * - 1 letra mayúscula
+   * - 1 letra minúscula
+   * - 1 número
+   * - 1 carácter especial
+   *
+   * @return Contraseña temporal de 12 caracteres.
+   */
+  private String generateSecureTemporaryPassword() {
+    StringBuilder password = new StringBuilder(TEMP_PASSWORD_LENGTH);
+
+    // Asegurar al menos un carácter de cada tipo
+    password.append(getRandomChar("ABCDEFGHIJKLMNOPQRSTUVWXYZ")); // Mayúscula
+    password.append(getRandomChar("abcdefghijklmnopqrstuvwxyz")); // Minúscula
+    password.append(getRandomChar("0123456789")); // Número
+    password.append(getRandomChar("@#$%&*!")); // Especial
+
+    // Completar el resto con caracteres aleatorios
+    for (int i = 4; i < TEMP_PASSWORD_LENGTH; i++) {
+      password.append(PASSWORD_CHARS.charAt(secureRandom.nextInt(PASSWORD_CHARS.length())));
+    }
+
+    // Mezclar los caracteres para que no sean predecibles
+    return shuffleString(password.toString());
+  }
+
+  /**
+   * Obtiene un carácter aleatorio de un conjunto de caracteres.
+   */
+  private char getRandomChar(String chars) {
+    return chars.charAt(secureRandom.nextInt(chars.length()));
+  }
+
+  /**
+   * Mezcla los caracteres de un string de forma aleatoria.
+   */
+  private String shuffleString(String input) {
+    char[] characters = input.toCharArray();
+    for (int i = characters.length - 1; i > 0; i--) {
+      int j = secureRandom.nextInt(i + 1);
+      char temp = characters[i];
+      characters[i] = characters[j];
+      characters[j] = temp;
+    }
+    return new String(characters);
   }
 
   private UserDto mapUserToUserResponse(UserEntity user) {

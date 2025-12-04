@@ -106,6 +106,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/public/**").permitAll()
                     .requestMatchers("/api/validation/**").permitAll()
                     .requestMatchers("/api/users/**").permitAll()
+                    .requestMatchers("/api/reviews/**").permitAll()
                     .requestMatchers("/swagger-ui.html").permitAll()
                     .requestMatchers("/swagger-ui/**").permitAll()
                     .requestMatchers("/v3/api-docs/**").permitAll()

@@ -131,4 +131,19 @@ public class UserController {
     return ResponseEntity.ok(new MessageResponse(
             "Usuario activado correctamente", true));
   }
+
+  /**
+   * Endpoint para que un administrador resetee la contraseña de un usuario.
+   * Genera una contraseña temporal automáticamente, la envía por email y
+   * marca isTemporaryPassword = true para forzar el cambio en el próximo login.
+   *
+   * @param id ID del usuario cuya contraseña será reseteada.
+   * @return Mensaje de confirmación.
+   */
+  @PostMapping("/{id}/admin-reset-password")
+  @PreAuthorize("hasAuthority('ADMINISTRADOR')")
+  public ResponseEntity<MessageResponse> adminResetPassword(@PathVariable Integer id) {
+    MessageResponse response = userService.adminResetPassword(id);
+    return ResponseEntity.ok(response);
+  }
 }
