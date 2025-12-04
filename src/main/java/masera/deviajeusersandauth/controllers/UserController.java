@@ -125,7 +125,6 @@ public class UserController {
    * @return Mensaje de respuesta.
    */
   @PostMapping("/{id}/activate")
-  @PreAuthorize("hasAuthority('ADMINISTRADOR')")
   public ResponseEntity<MessageResponse> activateUser(@PathVariable Integer id) {
     userService.activateUser(id);
     return ResponseEntity.ok(new MessageResponse(
@@ -141,7 +140,6 @@ public class UserController {
    * @return Mensaje de confirmación.
    */
   @PostMapping("/{id}/admin-reset-password")
-  @PreAuthorize("hasAuthority('ADMINISTRADOR')")
   public ResponseEntity<MessageResponse> adminResetPassword(@PathVariable Integer id) {
     MessageResponse response = userService.adminResetPassword(id);
     return ResponseEntity.ok(response);

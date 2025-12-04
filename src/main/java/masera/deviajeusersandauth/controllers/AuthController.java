@@ -98,7 +98,6 @@ public class AuthController {
    * @return una respuesta con el mensaje de éxito.
    */
   @PostMapping("/change-password")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<MessageResponse> changePassword(
           Authentication authentication,
           @Valid @RequestBody PasswordChangeRequest passwordChangeRequest) {

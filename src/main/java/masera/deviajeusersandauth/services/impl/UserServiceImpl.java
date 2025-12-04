@@ -86,6 +86,7 @@ public class UserServiceImpl implements UserService {
     userEntity.setActive(true);
     userEntity.setCreatedUser(userCreateRequest.getCreatedUser());
     userEntity.setLastUpdatedUser(userCreateRequest.getCreatedUser());
+    UserEntity userSaved = userRepository.save(userEntity);
 
     if (userCreateRequest.getRoleIds() != null && !userCreateRequest.getRoleIds().isEmpty()) {
       for (Integer roleId : userCreateRequest.getRoleIds()) {
@@ -99,11 +100,11 @@ public class UserServiceImpl implements UserService {
                 .createdUser(userCreateRequest.getCreatedUser())
                 .build();
 
-        userEntity.getUserRoles().add(userRole);
+        userRoleRepository.save(userRole);
       }
     }
 
-    UserEntity userSaved = userRepository.save(userEntity);
+
     if (userCreateRequest.getPassport() != null) {
       PassportEntity passport = modelMapper.map(
               userCreateRequest.getPassport(), PassportEntity.class);
